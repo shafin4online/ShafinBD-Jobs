@@ -1,0 +1,6 @@
+{
+  "name": "ShafinBD Jobs",
+  "description": "A comprehensive job portal for job seekers and employers with job postings, user profile registration, application tracking, and an admin panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
