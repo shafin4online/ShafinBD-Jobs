@@ -22,7 +22,7 @@ import {
   onAuthStateChanged,
   User 
 } from '../lib/firebase';
-import { JobContextType, DEFAULT_FILTERS, LOCAL_STORAGE_KEYS } from './jobContextTypes';
+import { JobContextType, DEFAULT_FILTERS, LOCAL_STORAGE_KEYS, AdminSubTab, AdminNotification } from './jobContextTypes';
 import { createGoogleProfile, createNewJobObject, createNewApplicationObject } from './jobHelpers';
 
 const JobContext = createContext<JobContextType | undefined>(undefined);
@@ -30,6 +30,79 @@ const JobContext = createContext<JobContextType | undefined>(undefined);
 export const ADMIN_EMAILS = [
   'shafinbd4u@gmail.com',
   'rashidul4you@gmail.com',
+];
+
+const INITIAL_CATEGORIES = [
+  '🏛️ Govt. Job',
+  '💼 Private Job',
+  '🎓 University Admission Notice',
+  'Software & IT',
+  'Digital Marketing',
+  'Graphic Design',
+  'Banking & Finance',
+  'Customer Support',
+  'Data Entry',
+  'Engineering',
+  'Sales & Business',
+];
+
+const INITIAL_SAMPLE_USERS: UserProfile[] = [
+  {
+    id: 'usr-101',
+    fullName: 'Shafin BD (Admin)',
+    email: 'shafinbd4u@gmail.com',
+    phone: '01700000000',
+    title: 'Super Administrator',
+    location: 'Dhaka, Bangladesh',
+    skills: ['Management', 'React', 'Firebase', 'System Admin'],
+    experience: '5 Years',
+    education: 'B.Sc in CSE',
+    bio: 'Platform Owner & Administrator for ShafinBD Jobs',
+    registeredAt: '2026-01-01',
+    savedJobs: [],
+  },
+  {
+    id: 'usr-102',
+    fullName: 'Rashidul Islam (Admin)',
+    email: 'rashidul4you@gmail.com',
+    phone: '01800000000',
+    title: 'Co-Admin & Moderator',
+    location: 'Dhaka, Bangladesh',
+    skills: ['Operations', 'Recruitment', 'SQL'],
+    experience: '4 Years',
+    education: 'BBA in Marketing',
+    bio: 'Job Circular Moderator & Portal Admin',
+    registeredAt: '2026-01-05',
+    savedJobs: [],
+  },
+  {
+    id: 'usr-103',
+    fullName: 'Tanvir Ahmed',
+    email: 'tanvir.dev@gmail.com',
+    phone: '01912345678',
+    title: 'Senior Full Stack Web Developer',
+    location: 'Dhaka (Uttara)',
+    skills: ['React', 'Node.js', 'TypeScript', 'Tailwind'],
+    experience: '3.5 Years',
+    education: 'B.Sc in CSE (BUET)',
+    bio: 'Passionate Web Developer looking for full-time remote or hybrid opportunities.',
+    registeredAt: '2026-02-10',
+    savedJobs: [],
+  },
+  {
+    id: 'usr-104',
+    fullName: 'Anika Rahman',
+    email: 'anika.mktg@gmail.com',
+    phone: '01711223344',
+    title: 'Digital Marketing & SEO Specialist',
+    location: 'Chittagong',
+    skills: ['SEO', 'Google Ads', 'Content Strategy', 'Social Media'],
+    experience: '2 Years',
+    education: 'BBA in Management (CU)',
+    bio: 'E-commerce & Brand Growth Marketer.',
+    registeredAt: '2026-02-15',
+    savedJobs: [],
+  }
 ];
 
 export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -50,10 +123,44 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('jobs');
+  const [adminSubTab, setAdminSubTab] = useState<AdminSubTab>('overview');
+  const [categoriesList, setCategoriesList] = useState<string[]>(INITIAL_CATEGORIES);
+  const [notificationsList, setNotificationsList] = useState<AdminNotification[]>([
+    {
+      id: 'notif-1',
+      title: 'নতুন সরকারি প্রাথমিক নিয়োগ বিজ্ঞপ্তি ২০২৬',
+      message: 'বাংলাদেশ প্রাথমিক শিক্ষা অধিদপ্তর কর্তৃক সহকারী শিক্ষক নিয়োগের নিয়োগ বিজ্ঞপ্তি প্রকাশ করা হয়েছে।',
+      target: 'All Users',
+      type: 'Circular Alert',
+      sentAt: new Date().toLocaleDateString('bn-BD') + ' 10:30 AM',
+    }
+  ]);
+  const [userList, setUserList] = useState<UserProfile[]>(INITIAL_SAMPLE_USERS);
+
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [selectedJobForModal, setSelectedJobForModal] = useState<Job | null>(null);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(true);
   const [lang, setLang] = useState<'BN' | 'EN'>('BN');
+
+  const addCategory = (catName: string) => {
+    if (!catName.trim()) return;
+    if (!categoriesList.includes(catName.trim())) {
+      setCategoriesList((prev) => [...prev, catName.trim()]);
+    }
+  };
+
+  const deleteCategory = (catName: string) => {
+    setCategoriesList((prev) => prev.filter((c) => c !== catName));
+  };
+
+  const sendNotification = (notif: Omit<AdminNotification, 'id' | 'sentAt'>) => {
+    const newNotif: AdminNotification = {
+      ...notif,
+      id: `notif-${Date.now()}`,
+      sentAt: new Date().toLocaleString(),
+    };
+    setNotificationsList((prev) => [newNotif, ...prev]);
+  };
 
   const checkAndSetAdmin = (email?: string | null) => {
     if (!email) return false;
@@ -318,7 +425,9 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <JobContext.Provider
       value={{
-        jobs, profile, applications, authUser, role, isAdminLoggedIn, activeTab, filters,
+        jobs, profile, applications, authUser, role, isAdminLoggedIn, activeTab,
+        adminSubTab, setAdminSubTab, categoriesList, addCategory, deleteCategory,
+        notificationsList, sendNotification, userList, filters,
         isFirebaseConnected, firebaseProjectId: firebaseConfig.projectId, isAuthLoading,
         authError, setAuthError, showAuthModal, setShowAuthModal, signInWithGoogle,
         signInWithEmail, registerWithEmail, directProfileLogin, logoutUser, addJob,

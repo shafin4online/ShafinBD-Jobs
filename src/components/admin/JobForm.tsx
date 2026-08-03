@@ -1,5 +1,6 @@
 import React from 'react';
 import { Job, JobCategory, JobType, ExperienceLevel } from '../../types';
+import { useJobContext } from '../../context/JobContext';
 import { Sparkles, Save, RotateCcw } from 'lucide-react';
 
 interface JobFormProps {
@@ -25,6 +26,8 @@ export const JobForm: React.FC<JobFormProps> = ({
   aiNotice,
   formSuccess,
 }) => {
+  const { categoriesList } = useJobContext();
+
   return (
     <form onSubmit={handleFormSubmit} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
       <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
@@ -46,7 +49,7 @@ export const JobForm: React.FC<JobFormProps> = ({
                 companyLogo: 'https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=120&auto=format&fit=crop&q=80',
                 location: 'Dhaka (Hybrid)',
                 jobType: 'Full-time',
-                category: 'Software & IT',
+                category: categoriesList[0] || 'Software & IT',
                 salaryRange: '৳50,000 - ৳75,000 / month',
                 experienceLevel: 'Mid Level',
                 description: '',
@@ -57,7 +60,7 @@ export const JobForm: React.FC<JobFormProps> = ({
                 featured: true,
               });
             }}
-            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1"
+            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>বাতিল করুন</span>
@@ -104,14 +107,11 @@ export const JobForm: React.FC<JobFormProps> = ({
             onChange={(e) => setJobForm({ ...jobForm, category: e.target.value as JobCategory })}
             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
           >
-            <option value="Govt. Job">🏛️ সরকারি চাকরি (Govt. Job)</option>
-            <option value="Private Job">💼 বেসরকারি চাকরি (Private Job)</option>
-            <option value="University Admission Notice">🎓 বিশ্ববিদ্যালয় ভর্তি বিজ্ঞপ্তি</option>
-            <option value="Software & IT">💻 Software & IT</option>
-            <option value="Digital Marketing">📈 Digital Marketing</option>
-            <option value="Banking & Finance">🏦 Banking & Finance</option>
-            <option value="Customer Support">🎧 Customer Support</option>
-            <option value="Engineering">⚙️ Engineering</option>
+            {categoriesList.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
         </div>
 

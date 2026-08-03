@@ -2,11 +2,24 @@ import React, { useState } from 'react';
 import { useJobContext } from '../context/JobContext';
 import { Job, JobType, JobCategory, ExperienceLevel } from '../types';
 import { GoogleGenAI } from '@google/genai';
-import { ShieldCheck, PlusCircle, Briefcase, FileText } from 'lucide-react';
-import { AdminStats } from './admin/AdminStats';
+import { 
+  ShieldCheck, 
+  PlusCircle, 
+  Briefcase, 
+  FileText, 
+  LayoutDashboard, 
+  Users, 
+  Bell, 
+  FolderKanban 
+} from 'lucide-react';
 import { JobForm } from './admin/JobForm';
 import { AdminJobsTable } from './admin/AdminJobsTable';
 import { AdminApplicationsTable } from './admin/AdminApplicationsTable';
+import { AdminOverview } from './admin/AdminOverview';
+import { AdminUserList } from './admin/AdminUserList';
+import { AdminNotifications } from './admin/AdminNotifications';
+import { AdminCategories } from './admin/AdminCategories';
+import { AdminSubTab } from '../context/jobContextTypes';
 
 export const AdminPanel: React.FC = () => {
   const {
@@ -26,9 +39,10 @@ export const AdminPanel: React.FC = () => {
     setShowAuthModal,
     profile,
     authUser,
+    adminSubTab,
+    setAdminSubTab,
   } = useJobContext();
 
-  const [activeAdminTab, setActiveAdminTab] = useState<'post' | 'jobs' | 'applications'>('post');
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [passcode, setPasscode] = useState('');
   const [passError, setPassError] = useState('');
@@ -271,11 +285,18 @@ export const AdminPanel: React.FC = () => {
       status: job.status,
       featured: job.featured,
     });
-    setActiveAdminTab('post');
+    setAdminSubTab('post');
   };
 
-  const activeJobsCount = jobs.filter((j) => j.status === 'active').length;
-  const pendingAppsCount = applications.filter((a) => a.status === 'Pending').length;
+  const subNavTabs: Array<{ id: AdminSubTab; label: string; icon: any }> = [
+    { id: 'overview', label: 'ওভারভিউ (Overview)', icon: LayoutDashboard },
+    { id: 'post', label: 'নতুন জব পোস্ট (Post Job)', icon: PlusCircle },
+    { id: 'users', label: 'ইউজার লিস্ট (Users)', icon: Users },
+    { id: 'notifications', label: 'নোটিফিকেশন প্যানেল', icon: Bell },
+    { id: 'categories', label: 'ক্যাটাগরি ম্যানেজমেন্ট', icon: FolderKanban },
+    { id: 'jobs', label: 'সার্কুলার তালিকা (' + jobs.length + ')', icon: Briefcase },
+    { id: 'applications', label: 'আবেদনসমূহ (' + applications.length + ')', icon: FileText },
+  ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -287,72 +308,57 @@ export const AdminPanel: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-black text-white">এডমিন প্যানেল (Admin Management)</h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-slate-950 uppercase">
-                Admin Mode
+              <h2 className="text-xl font-black text-white">এডমিন এডমিনিস্ট্রেশন প্যানেল</h2>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500 text-slate-950 uppercase">
+                Admin Active
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">নতুন জব ও সার্কুলার পোস্ট করুন • সক্রিয় এডমিন: <span className="text-emerald-400 font-bold">{currentAdminEmail}</span></p>
+            <p className="text-xs text-slate-400 mt-0.5">সক্রিয় এডমিন অ্যাকাউন্ট: <span className="text-emerald-400 font-bold">{currentAdminEmail}</span></p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={resetAllData}
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 border border-slate-700 text-xs font-semibold"
+            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 border border-slate-700 text-xs font-semibold cursor-pointer"
           >
             ডাটা রিসেট
           </button>
           <button
             onClick={logoutAdmin}
-            className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs"
+            className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs cursor-pointer"
           >
             এডমিন এক্সিট
           </button>
         </div>
       </div>
 
-      <AdminStats
-        totalJobs={jobs.length}
-        activeJobs={activeJobsCount}
-        totalApplications={applications.length}
-        pendingApplications={pendingAppsCount}
-      />
-
-      {/* Tabs Switcher */}
-      <div className="flex items-center gap-2 bg-slate-200/80 p-1.5 rounded-2xl">
-        <button
-          onClick={() => setActiveAdminTab('post')}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
-            activeAdminTab === 'post' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
-          }`}
-        >
-          <PlusCircle className="w-4 h-4 text-emerald-600" />
-          <span>নতুন জব পোস্ট করুন</span>
-        </button>
-
-        <button
-          onClick={() => setActiveAdminTab('jobs')}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
-            activeAdminTab === 'jobs' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
-          }`}
-        >
-          <Briefcase className="w-4 h-4 text-emerald-600" />
-          <span>জব লিস্ট ({jobs.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveAdminTab('applications')}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
-            activeAdminTab === 'applications' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
-          }`}
-        >
-          <FileText className="w-4 h-4 text-emerald-600" />
-          <span>আবেদনপত্র ({applications.length})</span>
-        </button>
+      {/* Admin Sub-Tabs Navigation Bar */}
+      <div className="flex items-center gap-1.5 bg-slate-200/90 p-1.5 rounded-2xl overflow-x-auto text-xs font-bold scrollbar-none">
+        {subNavTabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = adminSubTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setAdminSubTab(tab.id)}
+              className={`px-3.5 py-2.5 rounded-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+                isActive
+                  ? 'bg-slate-900 text-white shadow-md'
+                  : 'text-slate-700 hover:bg-white/60 hover:text-slate-900'
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-500'}`} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {activeAdminTab === 'post' && (
+      {/* Sub-view Content Rendering */}
+      {adminSubTab === 'overview' && <AdminOverview />}
+
+      {adminSubTab === 'post' && (
         <JobForm
           editingJob={editingJob}
           setEditingJob={setEditingJob}
@@ -366,7 +372,13 @@ export const AdminPanel: React.FC = () => {
         />
       )}
 
-      {activeAdminTab === 'jobs' && (
+      {adminSubTab === 'users' && <AdminUserList />}
+
+      {adminSubTab === 'notifications' && <AdminNotifications />}
+
+      {adminSubTab === 'categories' && <AdminCategories />}
+
+      {adminSubTab === 'jobs' && (
         <AdminJobsTable
           jobs={jobs}
           startEditJob={startEditJob}
@@ -376,7 +388,7 @@ export const AdminPanel: React.FC = () => {
         />
       )}
 
-      {activeAdminTab === 'applications' && (
+      {adminSubTab === 'applications' && (
         <AdminApplicationsTable
           applications={applications}
           updateApplicationStatus={updateApplicationStatus}
@@ -385,3 +397,4 @@ export const AdminPanel: React.FC = () => {
     </div>
   );
 };
+

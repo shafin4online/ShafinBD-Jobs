@@ -2,6 +2,17 @@ import React from 'react';
 import { Job, UserProfile, JobApplication, FilterState, ActiveTab, ApplicationStatus } from '../types';
 import { User } from '../lib/firebase';
 
+export type AdminSubTab = 'overview' | 'post' | 'jobs' | 'users' | 'notifications' | 'categories' | 'applications';
+
+export interface AdminNotification {
+  id: string;
+  title: string;
+  message: string;
+  target: string;
+  type: string;
+  sentAt: string;
+}
+
 export interface JobContextType {
   jobs: Job[];
   profile: UserProfile;
@@ -10,6 +21,14 @@ export interface JobContextType {
   role: 'jobseeker' | 'admin';
   isAdminLoggedIn: boolean;
   activeTab: ActiveTab;
+  adminSubTab: AdminSubTab;
+  setAdminSubTab: (tab: AdminSubTab) => void;
+  categoriesList: string[];
+  addCategory: (categoryName: string) => void;
+  deleteCategory: (categoryName: string) => void;
+  notificationsList: AdminNotification[];
+  sendNotification: (notif: Omit<AdminNotification, 'id' | 'sentAt'>) => void;
+  userList: UserProfile[];
   filters: FilterState;
   isFirebaseConnected: boolean;
   firebaseProjectId: string;

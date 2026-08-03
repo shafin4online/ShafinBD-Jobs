@@ -1,6 +1,7 @@
 import React from 'react';
 import { useJobContext } from '../context/JobContext';
 import { ActiveTab } from '../types';
+import { AdminSubTab } from '../context/jobContextTypes';
 import { t, TranslationKey } from '../translations';
 import { 
   Home, 
@@ -17,7 +18,14 @@ import {
   LogOut,
   X,
   User as UserIcon,
-  CheckCircle2
+  CheckCircle2,
+  LayoutDashboard,
+  PlusCircle,
+  Users,
+  Bell,
+  FolderKanban,
+  ShieldCheck,
+  ArrowLeftRight
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -29,8 +37,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { 
     activeTab, 
     setActiveTab, 
+    adminSubTab,
+    setAdminSubTab,
     role, 
     setRole, 
+    isAdminLoggedIn,
     authUser, 
     profile, 
     logoutUser,
@@ -43,7 +54,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     onClose();
   };
 
-  const navItems: Array<{ id: ActiveTab; key: TranslationKey; icon: any; badge?: string }> = [
+  const handleAdminSubTabClick = (subTab: AdminSubTab) => {
+    setActiveTab('admin');
+    setAdminSubTab(subTab);
+    onClose();
+  };
+
+  const isShowAdminMenu = isAdminLoggedIn || role === 'admin' || activeTab === 'admin';
+
+  const adminNavItems: Array<{ id: AdminSubTab; key: TranslationKey; icon: any; badge?: string }> = [
+    { id: 'overview', key: 'overview', icon: LayoutDashboard },
+    { id: 'post', key: 'postNewJob', icon: PlusCircle, badge: 'New' },
+    { id: 'users', key: 'userList', icon: Users },
+    { id: 'notifications', key: 'notificationPanel', icon: Bell },
+    { id: 'categories', key: 'categoryManagement', icon: FolderKanban },
+    { id: 'jobs', key: 'manageJobs', icon: Briefcase },
+    { id: 'applications', key: 'myApplications', icon: FileText },
+  ];
+
+  const candidateNavItems: Array<{ id: ActiveTab; key: TranslationKey; icon: any; badge?: string }> = [
     { id: 'jobs', key: 'homeDashboard', icon: Home },
     { id: 'govt-jobs', key: 'govtJobs', icon: Building2, badge: 'Govt' },
     { id: 'private-jobs', key: 'privateJobs', icon: Briefcase },
@@ -100,79 +129,122 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Main Navigation Items */}
+        {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-xs">
           
-          {/* Section: Main Tabs */}
-          <div className="space-y-1">
-            <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
-              {t('mainNav', lang)}
-            </div>
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
+          {/* SECTION: Admin Navigation Mode */}
+          {isShowAdminMenu ? (
+            <div className="space-y-1">
+              <div className="px-3 pb-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-400 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  {t('adminNavTitle', lang)}
+                </span>
+                <span className="bg-emerald-500/20 text-emerald-300 text-[9px] px-1.5 py-0.5 rounded font-extrabold">
+                  ADMIN
+                </span>
+              </div>
+
+              {adminNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === 'admin' && adminSubTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleAdminSubTabClick(item.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-emerald-400'}`} />
+                      <span>{t(item.key, lang)}</span>
+                    </div>
+                    {item.badge && (
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-extrabold ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/30'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+
+              {/* Mode Switcher / User View Option */}
+              <div className="pt-3 border-t border-slate-800/60">
                 <button
-                  key={item.id}
-                  onClick={() => handleTabClick(item.id)}
+                  onClick={() => {
+                    setRole('jobseeker');
+                    setActiveTab('jobs');
+                    onClose();
+                  }}
+                  className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all flex items-center justify-between cursor-pointer border border-slate-700"
+                >
+                  <span className="flex items-center gap-2 text-slate-300">
+                    <ArrowLeftRight className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{t('exitAdminMode', lang)}</span>
+                  </span>
+                  <span className="text-[10px] text-amber-400 font-extrabold">
+                    {t('jobSeeker', lang)}
+                  </span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* SECTION: Candidate / Job Seeker Navigation Mode */
+            <div className="space-y-1">
+              <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                {t('mainNav', lang)}
+              </div>
+              {candidateNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleTabClick(item.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold transition-all ${
+                      isActive
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                      <span>{t(item.key, lang)}</span>
+                    </div>
+                    {item.badge && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+
+              {/* Section: Admin Access Entry */}
+              <div className="space-y-1 pt-2 border-t border-slate-800/60">
+                <button
+                  onClick={() => handleTabClick('admin')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold transition-all ${
-                    isActive
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                      : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                    activeTab === 'admin'
+                      ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+                      : 'text-purple-300 hover:bg-purple-950/40 hover:text-purple-200'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                    <span>{t(item.key, lang)}</span>
+                    <FileCode className="w-4 h-4 text-purple-400" />
+                    <span>{t('adminPanel', lang)}</span>
                   </div>
-                  {item.badge && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold ${
-                      isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
-                    }`}>
-                      {item.badge}
-                    </span>
-                  )}
                 </button>
-              );
-            })}
-          </div>
-
-          {/* Section: Admin Navigation */}
-          <div className="space-y-1 pt-2 border-t border-slate-800/60">
-            <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 flex items-center justify-between">
-              <span>{t('panelMode', lang)}</span>
-              <span className="text-[9px] font-bold text-amber-400 bg-amber-400/10 px-1 rounded">
-                {role === 'admin' ? t('admin', lang) : t('jobSeeker', lang)}
-              </span>
-            </div>
-
-            <button
-              onClick={() => handleTabClick('admin')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold transition-all ${
-                activeTab === 'admin'
-                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
-                  : 'text-purple-300 hover:bg-purple-950/40 hover:text-purple-200'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <FileCode className="w-4 h-4 text-purple-400" />
-                <span>{t('adminPanel', lang)}</span>
               </div>
-            </button>
-
-            {/* Quick Role Toggle Button */}
-            <div className="px-1 pt-1">
-              <button
-                onClick={() => setRole(role === 'admin' ? 'jobseeker' : 'admin')}
-                className="w-full text-[11px] py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-left transition-colors flex items-center justify-between"
-              >
-                <span>{t('switchMode', lang)}</span>
-                <span className="text-[10px] text-emerald-400 underline">
-                  {role === 'admin' ? t('jobSeekerMode', lang) : t('adminMode', lang)}
-                </span>
-              </button>
             </div>
-          </div>
+          )}
 
           {/* Section: Company Info & Pages */}
           <div className="space-y-1 pt-2 border-t border-slate-800/60">
@@ -222,7 +294,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <button
                 onClick={logoutUser}
                 title={t('signOut', lang)}
-                className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0"
+                className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0 cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -233,7 +305,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 setShowAuthModal(true);
                 onClose();
               }}
-              className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+              className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <UserIcon className="w-4 h-4" />
               <span>{t('signInRegister', lang)}</span>

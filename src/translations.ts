@@ -13,6 +13,7 @@ export const translations = {
     
     // Sidebar Navigation
     mainNav: 'প্রধান নেভিগেশন',
+    adminNavTitle: 'এডমিন নেভিগেশন',
     homeDashboard: 'হোম (Dashboard)',
     govtJobs: 'সরকারি চাকরি',
     privateJobs: 'বেসরকারি চাকরি',
@@ -26,6 +27,7 @@ export const translations = {
     switchMode: 'মোড পরিবর্তন করুন',
     jobSeekerMode: 'জব সিকার মোড',
     adminMode: 'এডমিন মোড',
+    exitAdminMode: 'ইউজার মোডে ফিরুন',
     infoSupport: 'তথ্য ও সহায়তা',
     privacyPolicy: 'গোপনীয়তা নীতি',
     termsOfService: 'ব্যবহারের শর্তাবলী',
@@ -34,6 +36,14 @@ export const translations = {
     activeLogin: 'লগইন সক্রিয়',
     signInRegister: 'সাইন ইন / রেজিস্ট্রেশন',
     educationPortal: 'শিক্ষা ও জব পোর্টাল',
+
+    // Admin Sidebar Tabs
+    overview: 'ওভারভিউ (Overview)',
+    postNewJob: 'নতুন জব পোস্ট (Post Job)',
+    userList: 'ইউজার লিস্ট (User List)',
+    notificationPanel: 'নোটিফিকেশন প্যানেল',
+    categoryManagement: 'ক্যাটাগরি ম্যানেজমেন্ট',
+    manageJobs: 'সার্কুলার তালিকা (Job List)',
 
     // Titles & Sections
     allCircularsTitle: 'সকল প্রকাশিত সার্কুলার ও জব পোস্ট',
@@ -98,6 +108,7 @@ export const translations = {
     
     // Sidebar Navigation
     mainNav: 'MAIN NAVIGATION',
+    adminNavTitle: 'ADMIN NAVIGATION',
     homeDashboard: 'Home (Dashboard)',
     govtJobs: 'Govt. Jobs',
     privateJobs: 'Private Jobs',
@@ -111,6 +122,7 @@ export const translations = {
     switchMode: 'Switch Mode',
     jobSeekerMode: 'Job Seeker Mode',
     adminMode: 'Admin Mode',
+    exitAdminMode: 'Switch to Candidate View',
     infoSupport: 'INFO & SUPPORT',
     privacyPolicy: 'Privacy Policy',
     termsOfService: 'Terms of Service',
@@ -119,6 +131,14 @@ export const translations = {
     activeLogin: 'Active Login',
     signInRegister: 'Sign In / Register',
     educationPortal: 'Education & Job Portal',
+
+    // Admin Sidebar Tabs
+    overview: 'Overview',
+    postNewJob: 'Post New Job',
+    userList: 'User List',
+    notificationPanel: 'Notification Panel',
+    categoryManagement: 'Category Management',
+    manageJobs: 'Job Circulars List',
 
     // Titles & Sections
     allCircularsTitle: 'All Published Circulars & Job Posts',
