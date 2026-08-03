@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Job, UserProfile, JobApplication, FilterState, ActiveTab, ApplicationStatus } from '../types';
-import { INITIAL_JOBS, INITIAL_PROFILE, INITIAL_APPLICATIONS } from '../data/initialData';
+import { INITIAL_PROFILE } from '../data/initialData';
 import {
   subscribeToJobs,
   subscribeToApplications,
@@ -16,63 +16,21 @@ import {
   auth, 
   googleProvider, 
   signInWithPopup, 
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut, 
   onAuthStateChanged,
   User 
 } from '../lib/firebase';
-
-const DEFAULT_FILTERS: FilterState = {
-  searchKeyword: '',
-  category: 'All',
-  jobType: 'All',
-  location: 'All',
-  experienceLevel: 'All',
-  salaryMin: 0,
-};
-
-interface JobContextType {
-  jobs: Job[];
-  profile: UserProfile;
-  applications: JobApplication[];
-  authUser: User | null;
-  role: 'jobseeker' | 'admin';
-  isAdminLoggedIn: boolean;
-  activeTab: ActiveTab;
-  filters: FilterState;
-  isFirebaseConnected: boolean;
-  firebaseProjectId: string;
-  isAuthLoading: boolean;
-  signInWithGoogle: () => Promise<void>;
-  logoutUser: () => Promise<void>;
-  addJob: (job: Omit<Job, 'id' | 'createdAt' | 'applicantCount'>) => void;
-  updateJob: (job: Job) => void;
-  deleteJob: (jobId: string) => void;
-  toggleJobStatus: (jobId: string) => void;
-  toggleJobFeatured: (jobId: string) => void;
-  updateProfile: (profile: Partial<UserProfile>) => void;
-  applyForJob: (jobId: string, resumeNote?: string) => { success: boolean; message: string };
-  updateApplicationStatus: (applicationId: string, status: ApplicationStatus, notes?: string) => void;
-  toggleSaveJob: (jobId: string) => void;
-  setRole: (role: 'jobseeker' | 'admin') => void;
-  loginAdmin: (passcode: string) => boolean;
-  logoutAdmin: () => void;
-  setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
-  resetFilters: () => void;
-  setActiveTab: (tab: ActiveTab) => void;
-  resetAllData: () => void;
-  selectedJobForModal: Job | null;
-  setSelectedJobForModal: (job: Job | null) => void;
-}
+import { JobContextType, DEFAULT_FILTERS, LOCAL_STORAGE_KEYS } from './jobContextTypes';
+import { createGoogleProfile, createNewJobObject, createNewApplicationObject } from './jobHelpers';
 
 const JobContext = createContext<JobContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEYS = {
-  JOBS: 'shafinbd_jobs_v2',
-  PROFILE: 'shafinbd_profile_v2',
-  APPLICATIONS: 'shafinbd_applications_v2',
-  ROLE: 'shafinbd_role_v2',
-  ADMIN_AUTH: 'shafinbd_admin_auth_v2',
-};
+export const ADMIN_EMAILS = [
+  'shafinbd4u@gmail.com',
+  'rashidul4you@gmail.com',
+];
 
 export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -80,10 +38,11 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+  const [authError, setAuthError] = useState<any>(null);
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
 
   const [role, setRoleState] = useState<'jobseeker' | 'admin'>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.ROLE);
-    return (saved as 'jobseeker' | 'admin') || 'jobseeker';
+    return (localStorage.getItem(LOCAL_STORAGE_KEYS.ROLE) as 'jobseeker' | 'admin') || 'jobseeker';
   });
 
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
@@ -94,161 +53,158 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [selectedJobForModal, setSelectedJobForModal] = useState<Job | null>(null);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(true);
+  const [lang, setLang] = useState<'BN' | 'EN'>('BN');
 
-  // Firebase Auth state observer
+  const checkAndSetAdmin = (email?: string | null) => {
+    if (!email) return false;
+    const isTargetAdmin = ADMIN_EMAILS.some((e) => e.toLowerCase() === email.toLowerCase());
+    if (isTargetAdmin) {
+      setRoleState('admin');
+      setIsAdminLoggedIn(true);
+      setActiveTab('admin');
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ROLE, 'admin');
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH, 'true');
+      return true;
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    if (lang === 'BN') {
+      document.body.classList.add('font-bn');
+      document.body.classList.remove('font-en');
+    } else {
+      document.body.classList.add('font-en');
+      document.body.classList.remove('font-bn');
+    }
+  }, [lang]);
+
+  // Check admin whenever user email changes
+  useEffect(() => {
+    const currentEmail = authUser?.email || profile?.email;
+    if (currentEmail) {
+      const isTargetAdmin = ADMIN_EMAILS.some((e) => e.toLowerCase() === currentEmail.toLowerCase());
+      if (isTargetAdmin) {
+        setRoleState('admin');
+        setIsAdminLoggedIn(true);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ROLE, 'admin');
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH, 'true');
+      }
+    }
+  }, [authUser?.email, profile?.email]);
+
+  // Observer
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setAuthUser(currentUser);
       setIsAuthLoading(false);
-
       if (currentUser) {
-        // Build candidate profile from Google User credentials
-        const updatedProf: UserProfile = {
-          id: currentUser.uid,
-          fullName: currentUser.displayName || 'Google User',
-          email: currentUser.email || '',
-          phone: currentUser.phoneNumber || profile.phone || '',
-          title: profile.title || 'Job Seeker',
-          location: profile.location || 'Bangladesh',
-          skills: profile.skills || ['React', 'JavaScript'],
-          experience: profile.experience || '',
-          education: profile.education || '',
-          bio: profile.bio || `Signed in via Google (${currentUser.email})`,
-          resumeFileName: profile.resumeFileName || '',
-          githubUrl: profile.githubUrl || '',
-          linkedinUrl: profile.linkedinUrl || '',
-          registeredAt: profile.registeredAt || new Date().toISOString().split('T')[0],
-          savedJobs: profile.savedJobs || [],
-        };
-
-        setProfile((prev) => ({
-          ...updatedProf,
-          ...prev,
-          id: currentUser.uid,
-          fullName: currentUser.displayName || prev.fullName || 'Google User',
-          email: currentUser.email || prev.email || '',
-        }));
-
-        saveProfileToFirestore({
-          ...updatedProf,
-          id: currentUser.uid,
-          fullName: currentUser.displayName || 'Google User',
-          email: currentUser.email || '',
-        });
+        const updatedProf = createGoogleProfile(currentUser, profile.phone, profile.title);
+        setProfile((prev) => ({ ...updatedProf, ...prev, id: currentUser.uid }));
+        saveProfileToFirestore({ ...updatedProf, id: currentUser.uid });
+        if (currentUser.email) {
+          checkAndSetAdmin(currentUser.email);
+        }
       }
     });
-
     return () => unsubscribe();
   }, []);
 
-  // Purge legacy demo data on mount
+  useEffect(() => { clearDemoDataFromFirestore(); }, []);
+
+  // Realtime listeners
   useEffect(() => {
-    clearDemoDataFromFirestore();
-    // Clear legacy localStorage cached demo data
-    localStorage.removeItem('shafinbd_jobs_v1');
-    localStorage.removeItem('shafinbd_profile_v1');
-    localStorage.removeItem('shafinbd_applications_v1');
-    localStorage.removeItem('shafinbd_jobs_v2');
-    localStorage.removeItem('shafinbd_profile_v2');
-    localStorage.removeItem('shafinbd_applications_v2');
+    const unsubJobs = subscribeToJobs((loaded) => {
+      const demoIds = new Set(['job-101', 'job-102', 'job-103', 'job-104', 'job-105', 'job-106']);
+      setJobs((loaded || []).filter((j) => !demoIds.has(j.id)));
+      setIsFirebaseConnected(true);
+    }, () => setIsFirebaseConnected(false));
+
+    const unsubApps = subscribeToApplications((loaded) => {
+      const demoAppIds = new Set(['app-501', 'app-502']);
+      setApplications((loaded || []).filter((a) => !demoAppIds.has(a.id)));
+    }, () => {});
+
+    return () => { unsubJobs(); unsubApps(); };
   }, []);
 
-  // Realtime Firestore listeners for jobs & applications
-  useEffect(() => {
-    const unsubJobs = subscribeToJobs(
-      (loadedJobs) => {
-        const demoIds = new Set(['job-101', 'job-102', 'job-103', 'job-104', 'job-105', 'job-106']);
-        const cleaned = (loadedJobs || []).filter((j) => !demoIds.has(j.id));
-        setJobs(cleaned);
-        setIsFirebaseConnected(true);
-      },
-      () => setIsFirebaseConnected(false)
-    );
-
-    const unsubApps = subscribeToApplications(
-      (loadedApps) => {
-        const demoAppIds = new Set(['app-501', 'app-502']);
-        const cleaned = (loadedApps || []).filter((a) => !demoAppIds.has(a.id));
-        setApplications(cleaned);
-      },
-      () => {}
-    );
-
-    return () => {
-      unsubJobs();
-      unsubApps();
-    };
-  }, []);
-
-  // Listen to profile updates if authenticated
   useEffect(() => {
     if (!authUser?.uid) return;
-
-    const unsubProfile = subscribeToProfile(
-      authUser.uid,
-      (loadedProfile) => {
-        if (loadedProfile) {
-          setProfile(loadedProfile);
-        }
-      },
-      () => {}
-    );
-
+    const unsubProfile = subscribeToProfile(authUser.uid, (loaded) => {
+      if (loaded) {
+        setProfile(loaded);
+        if (loaded.email) checkAndSetAdmin(loaded.email);
+      }
+    }, () => {});
     return () => unsubProfile();
   }, [authUser?.uid]);
 
-  // Google Login function
+  // Auth Handlers
   const signInWithGoogle = async () => {
     try {
-      setIsAuthLoading(true);
-      await signInWithPopup(auth, googleProvider);
+      setIsAuthLoading(true); setAuthError(null);
+      const res = await signInWithPopup(auth, googleProvider);
+      if (res.user?.email) {
+        checkAndSetAdmin(res.user.email);
+      }
     } catch (error: any) {
-      console.error('Google Sign In Error:', error);
-      alert('Google Sign-In failed: ' + (error.message || 'Unknown error'));
-    } finally {
-      setIsAuthLoading(false);
-    }
+      setAuthError(error); setShowAuthModal(true); throw error;
+    } finally { setIsAuthLoading(false); }
   };
 
-  // Sign out function
-  const logoutUser = async () => {
+  const signInWithEmail = async (email: string, pass: string) => {
     try {
-      await signOut(auth);
-      setProfile(INITIAL_PROFILE);
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+      setIsAuthLoading(true); setAuthError(null);
+      const res = await signInWithEmailAndPassword(auth, email, pass);
+      if (res.user?.email) {
+        checkAndSetAdmin(res.user.email);
+      } else {
+        checkAndSetAdmin(email);
+      }
+    } catch (error: any) { setAuthError(error); throw error; }
+    finally { setIsAuthLoading(false); }
   };
 
-  // Sync to LocalStorage
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.JOBS, JSON.stringify(jobs));
-  }, [jobs]);
+  const registerWithEmail = async (email: string, pass: string, name: string) => {
+    try {
+      setIsAuthLoading(true); setAuthError(null);
+      const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+      const newProf = createGoogleProfile(userCred.user, '', '');
+      newProf.fullName = name || email.split('@')[0];
+      setProfile(newProf); saveProfileToFirestore(newProf);
+      checkAndSetAdmin(email);
+    } catch (error: any) { setAuthError(error); throw error; }
+    finally { setIsAuthLoading(false); }
+  };
 
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.PROFILE, JSON.stringify(profile));
-  }, [profile]);
+  const directProfileLogin = (email: string, name: string) => {
+    const customId = `user-${Date.now().toString().slice(-6)}`;
+    const newProf: UserProfile = {
+      id: customId,
+      fullName: name || email.split('@')[0],
+      email,
+      phone: '',
+      title: 'Job Seeker',
+      location: 'Bangladesh',
+      skills: ['React', 'JavaScript'],
+      experience: '',
+      education: '',
+      bio: 'Direct registered profile',
+      registeredAt: new Date().toISOString().split('T')[0],
+      savedJobs: [],
+    };
+    setProfile(newProf); saveProfileToFirestore(newProf);
+    checkAndSetAdmin(email);
+  };
 
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.APPLICATIONS, JSON.stringify(applications));
-  }, [applications]);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.ROLE, role);
-  }, [role]);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH, String(isAdminLoggedIn));
-  }, [isAdminLoggedIn]);
+  const logoutUser = async () => {
+    try { await signOut(auth); setProfile(INITIAL_PROFILE); }
+    catch (e) { console.error(e); }
+  };
 
   // Actions
   const addJob = (jobData: Omit<Job, 'id' | 'createdAt' | 'applicantCount'>) => {
-    const newJob: Job = {
-      ...jobData,
-      id: `job-${Date.now().toString().slice(-5)}`,
-      createdAt: new Date().toISOString().split('T')[0],
-      applicantCount: 0,
-    };
+    const newJob = createNewJobObject(jobData);
     setJobs((prev) => [newJob, ...prev]);
     saveJobToFirestore(newJob);
   };
@@ -286,9 +242,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateProfile = (updatedFields: Partial<UserProfile>) => {
     setProfile((prev) => {
       const newProf = { ...prev, ...updatedFields };
-      if (authUser?.uid) {
-        newProf.id = authUser.uid;
-      }
+      if (authUser?.uid) newProf.id = authUser.uid;
       saveProfileToFirestore(newProf);
       return newProf;
     });
@@ -297,13 +251,9 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleSaveJob = (jobId: string) => {
     setProfile((prev) => {
       const isSaved = prev.savedJobs.includes(jobId);
-      const newSaved = isSaved
-        ? prev.savedJobs.filter((id) => id !== jobId)
-        : [...prev.savedJobs, jobId];
+      const newSaved = isSaved ? prev.savedJobs.filter((id) => id !== jobId) : [...prev.savedJobs, jobId];
       const updated = { ...prev, savedJobs: newSaved };
-      if (authUser?.uid) {
-        saveProfileToFirestore(updated);
-      }
+      if (authUser?.uid) saveProfileToFirestore(updated);
       return updated;
     });
   };
@@ -311,52 +261,34 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const applyForJob = (jobId: string, resumeNote?: string) => {
     const job = jobs.find((j) => j.id === jobId);
     if (!job) return { success: false, message: 'Job not found' };
-
-    if (job.status === 'closed') {
-      return { success: false, message: 'This job post is closed for applications.' };
-    }
+    if (job.status === 'closed') return { success: false, message: 'Job is closed' };
 
     const currentUserId = authUser?.uid || profile.id || 'guest-user';
-    const existing = applications.find((a) => a.jobId === jobId && a.userId === currentUserId);
-    if (existing) {
-      return { success: false, message: 'You have already applied for this position.' };
+    if (applications.some((a) => a.jobId === jobId && a.userId === currentUserId)) {
+      return { success: false, message: 'You have already applied.' };
     }
 
-    const newApplication: JobApplication = {
-      id: `app-${Date.now().toString().slice(-5)}`,
-      jobId: job.id,
-      jobTitle: job.title,
-      companyName: job.company,
-      userId: currentUserId,
-      userName: authUser?.displayName || profile.fullName || 'Gmail Applicant',
-      userEmail: authUser?.email || profile.email || 'applicant@gmail.com',
-      userPhone: profile.phone || '',
-      resumeNote: resumeNote || 'Applied using registered Gmail profile.',
-      skills: profile.skills || [],
-      status: 'Pending',
-      appliedAt: new Date().toLocaleString(),
-    };
+    const newApp = createNewApplicationObject(
+      job, currentUserId,
+      authUser?.displayName || profile.fullName || 'Applicant',
+      authUser?.email || profile.email || 'applicant@gmail.com',
+      profile.phone || '', resumeNote, profile.skills || []
+    );
 
-    setApplications((prev) => [newApplication, ...prev]);
-    saveApplicationToFirestore(newApplication);
+    setApplications((prev) => [newApp, ...prev]);
+    saveApplicationToFirestore(newApp);
 
     const updatedJob = { ...job, applicantCount: (job.applicantCount || 0) + 1 };
     setJobs((prev) => prev.map((j) => (j.id === jobId ? updatedJob : j)));
     saveJobToFirestore(updatedJob);
 
-    return { success: true, message: 'Application submitted successfully!' };
+    return { success: true, message: 'আবেদন সফলভাবে জমা নেওয়া হয়েছে!' };
   };
 
-  const updateApplicationStatus = (
-    applicationId: string,
-    status: ApplicationStatus,
-    notes?: string
-  ) => {
+  const updateApplicationStatus = (applicationId: string, status: ApplicationStatus, notes?: string) => {
     setApplications((prev) => {
       const updated = prev.map((app) =>
-        app.id === applicationId
-          ? { ...app, status, notes: notes !== undefined ? notes : app.notes }
-          : app
+        app.id === applicationId ? { ...app, status, notes: notes !== undefined ? notes : app.notes } : app
       );
       const target = updated.find((a) => a.id === applicationId);
       if (target) saveApplicationToFirestore(target);
@@ -364,72 +296,36 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const setRole = (newRole: 'jobseeker' | 'admin') => {
-    setRoleState(newRole);
-  };
+  const setRole = (newRole: 'jobseeker' | 'admin') => setRoleState(newRole);
 
   const loginAdmin = (passcode: string) => {
     if (passcode === 'admin123' || passcode === 'admin') {
-      setIsAdminLoggedIn(true);
-      setRoleState('admin');
-      return true;
+      setIsAdminLoggedIn(true); setRoleState('admin'); return true;
     }
     return false;
   };
 
-  const logoutAdmin = () => {
-    setIsAdminLoggedIn(false);
-    setRoleState('jobseeker');
-  };
+  const logoutAdmin = () => { setIsAdminLoggedIn(false); setRoleState('jobseeker'); };
 
-  const resetFilters = () => {
-    setFilters(DEFAULT_FILTERS);
-  };
+  const resetFilters = () => setFilters(DEFAULT_FILTERS);
 
   const resetAllData = () => {
-    setJobs([]);
-    setProfile(INITIAL_PROFILE);
-    setApplications([]);
-    setRoleState('jobseeker');
-    setIsAdminLoggedIn(false);
-    setFilters(DEFAULT_FILTERS);
+    setJobs([]); setProfile(INITIAL_PROFILE); setApplications([]);
+    setRoleState('jobseeker'); setIsAdminLoggedIn(false); setFilters(DEFAULT_FILTERS);
     localStorage.clear();
   };
 
   return (
     <JobContext.Provider
       value={{
-        jobs,
-        profile,
-        applications,
-        authUser,
-        role,
-        isAdminLoggedIn,
-        activeTab,
-        filters,
-        isFirebaseConnected,
-        firebaseProjectId: firebaseConfig.projectId,
-        isAuthLoading,
-        signInWithGoogle,
-        logoutUser,
-        addJob,
-        updateJob,
-        deleteJob,
-        toggleJobStatus,
-        toggleJobFeatured,
-        updateProfile,
-        applyForJob,
-        updateApplicationStatus,
-        toggleSaveJob,
-        setRole,
-        loginAdmin,
-        logoutAdmin,
-        setFilters,
-        resetFilters,
-        setActiveTab,
-        resetAllData,
-        selectedJobForModal,
-        setSelectedJobForModal,
+        jobs, profile, applications, authUser, role, isAdminLoggedIn, activeTab, filters,
+        isFirebaseConnected, firebaseProjectId: firebaseConfig.projectId, isAuthLoading,
+        authError, setAuthError, showAuthModal, setShowAuthModal, signInWithGoogle,
+        signInWithEmail, registerWithEmail, directProfileLogin, logoutUser, addJob,
+        updateJob, deleteJob, toggleJobStatus, toggleJobFeatured, updateProfile, applyForJob,
+        updateApplicationStatus, toggleSaveJob, setRole, loginAdmin, logoutAdmin, setFilters,
+        resetFilters, setActiveTab, resetAllData, selectedJobForModal, setSelectedJobForModal,
+        lang, setLang,
       }}
     >
       {children}
@@ -439,10 +335,6 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 export const useJobContext = () => {
   const context = useContext(JobContext);
-  if (!context) {
-    throw new Error('useJobContext must be used within a JobProvider');
-  }
+  if (!context) throw new Error('useJobContext must be used within a JobProvider');
   return context;
 };
-
-

@@ -1,1 +1,37 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@font-face {
+  font-family: 'Kalpurush';
+  src: url('/kalpurush.ttf') format('truetype'),
+       url('./kalpurush.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body, input, button, select, textarea {
+    font-family: inherit;
+  }
+
+  body {
+    font-family: 'Hind Siliguri', 'Plus Jakarta Sans', 'Inter', 'Kalpurush', 'Noto Sans Bengali', sans-serif;
+  }
+
+  body.font-bn, body.font-bn * {
+    font-family: 'Hind Siliguri', 'Kalpurush', 'Noto Sans Bengali', 'SolaimanLipi', sans-serif !important;
+  }
+
+  body.font-en, body.font-en * {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  }
+}
+
+

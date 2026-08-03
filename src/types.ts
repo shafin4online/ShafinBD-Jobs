@@ -8,7 +8,10 @@ export type JobCategory =
   | 'Customer Support'
   | 'Data Entry'
   | 'Engineering'
-  | 'Sales & Business';
+  | 'Sales & Business'
+  | 'Govt. Job'
+  | 'Private Job'
+  | 'University Admission Notice';
 
 export type ExperienceLevel = 'Entry Level' | 'Mid Level' | 'Senior Level' | 'Executive';
 
@@ -37,10 +40,20 @@ export interface Job {
 export interface UserProfile {
   id: string;
   fullName: string;
+  fullNameBangla?: string;
   email: string;
   phone: string;
+  altPhone?: string;
   title: string; // e.g. "Frontend React Developer"
   location: string;
+  presentAddress?: string;
+  permanentAddress?: string;
+  fatherName?: string;
+  motherName?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  nidOrPassport?: string;
+  expectedSalary?: string;
   skills: string[];
   experience: string;
   education: string;
@@ -78,4 +91,17 @@ export interface FilterState {
   salaryMin: number;
 }
 
-export type ActiveTab = 'jobs' | 'applications' | 'profile' | 'admin' | 'deploy-guide';
+export type ActiveTab = 
+  | 'jobs' 
+  | 'govt-jobs'
+  | 'private-jobs'
+  | 'university-admission'
+  | 'applications' 
+  | 'profile' 
+  | 'admin' 
+  | 'deploy-guide'
+  | 'privacy-policy'
+  | 'terms'
+  | 'about'
+  | 'contact';
+

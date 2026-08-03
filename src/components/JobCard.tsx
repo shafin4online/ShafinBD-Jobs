@@ -1,6 +1,7 @@
 import React from 'react';
 import { Job } from '../types';
 import { useJobContext } from '../context/JobContext';
+import { t } from '../translations';
 import {
   MapPin,
   Clock,
@@ -17,10 +18,10 @@ interface JobCardProps {
 }
 
 export const JobCard: React.FC<JobCardProps> = ({ job }) => {
-  const { profile, toggleSaveJob, setSelectedJobForModal, applications } = useJobContext();
+  const { profile, toggleSaveJob, setSelectedJobForModal, applications, lang } = useJobContext();
 
-  const isSaved = profile.savedJobs.includes(job.id);
-  const hasApplied = applications.some((a) => a.jobId === job.id && a.userId === profile.id);
+  const isSaved = (profile?.savedJobs || []).includes(job.id);
+  const hasApplied = (applications || []).some((a) => a.jobId === job.id && a.userId === profile?.id);
 
   // Calculate days remaining
   const calculateDeadline = (dateStr: string) => {
@@ -29,9 +30,9 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
     const diffTime = deadline.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 0) return { label: 'Expired', color: 'text-rose-600 bg-rose-50' };
-    if (diffDays === 0) return { label: 'Expires Today', color: 'text-amber-700 bg-amber-50' };
-    return { label: `${diffDays} days left`, color: 'text-slate-600 bg-slate-100' };
+    if (diffDays < 0) return { label: lang === 'EN' ? 'Expired' : 'মেয়াদ শেষ', color: 'text-rose-600 bg-rose-50' };
+    if (diffDays === 0) return { label: lang === 'EN' ? 'Expires Today' : 'আজ শেষ দিন', color: 'text-amber-700 bg-amber-50' };
+    return { label: lang === 'EN' ? `${diffDays} days left` : `বাকি ${diffDays} দিন`, color: 'text-slate-600 bg-slate-100' };
   };
 
   const deadlineInfo = calculateDeadline(job.deadline);
@@ -140,7 +141,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           {hasApplied ? (
             <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-teal-50 text-teal-800 border border-teal-200 text-xs font-bold">
               <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
-              Applied
+              {lang === 'EN' ? 'Applied' : 'আবেদিত'}
             </span>
           ) : null}
 
@@ -148,7 +149,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             onClick={() => setSelectedJobForModal(job)}
             className="flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white font-semibold text-xs transition-all shadow-xs group-hover:bg-emerald-600 cursor-pointer"
           >
-            <span>Details</span>
+            <span>{t('viewDetails', lang)}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>

@@ -1,9 +1,10 @@
 import React from 'react';
 import { useJobContext } from '../context/JobContext';
-import { Briefcase, Heart, Github, Rocket, ShieldCheck } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
+import { t } from '../translations';
 
 export const Footer: React.FC = () => {
-  const { setActiveTab } = useJobContext();
+  const { setActiveTab, lang } = useJobContext();
 
   return (
     <footer className="mt-16 bg-slate-900 text-slate-400 text-xs border-t border-slate-800">
@@ -23,40 +24,30 @@ export const Footer: React.FC = () => {
               </span>
             </div>
             <p className="text-slate-400 text-xs max-w-sm">
-              Connecting Bangladeshi talent with verified employers in Software, Marketing, Banking & Design.
+              {t('subTitle', lang)}
             </p>
           </div>
 
           {/* Nav Links */}
           <div className="flex flex-wrap items-center gap-4 sm:gap-6 font-semibold text-slate-300">
             <button onClick={() => setActiveTab('jobs')} className="hover:text-emerald-400">
-              Browse Jobs
+              {t('homeDashboard', lang)}
             </button>
             <button onClick={() => setActiveTab('profile')} className="hover:text-emerald-400">
-              Candidate Profile
+              {t('candidateProfile', lang)}
             </button>
             <button onClick={() => setActiveTab('applications')} className="hover:text-emerald-400">
-              My Applications
+              {t('myApplications', lang)}
             </button>
             <button onClick={() => setActiveTab('admin')} className="hover:text-emerald-400">
-              Employer Login
-            </button>
-            <button onClick={() => setActiveTab('deploy-guide')} className="hover:text-purple-400 text-purple-300 font-bold">
-              Deploy to Vercel
+              {t('employerLogin', lang)}
             </button>
           </div>
         </div>
 
         {/* Bottom copyright row */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px]">
-          <p>© {new Date().getFullYear()} ShafinBD Jobs. Designed & Built for Bangladesh Job Seekers & Employers.</p>
-
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-semibold border border-slate-700">
-              <Rocket className="w-3.5 h-3.5 text-purple-400" />
-              <span>Vercel & GitHub Ready</span>
-            </span>
-          </div>
+          <p>© {new Date().getFullYear()} {t('footerCopyright', lang)}</p>
         </div>
       </div>
     </footer>

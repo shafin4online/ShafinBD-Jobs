@@ -34,8 +34,8 @@ export const JobDetailsModal: React.FC = () => {
   if (!selectedJobForModal) return null;
 
   const job = selectedJobForModal;
-  const isSaved = profile.savedJobs.includes(job.id);
-  const hasApplied = applications.some((a) => a.jobId === job.id && a.userId === profile.id);
+  const isSaved = (profile?.savedJobs || []).includes(job.id);
+  const hasApplied = (applications || []).some((a) => a.jobId === job.id && a.userId === profile?.id);
 
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
