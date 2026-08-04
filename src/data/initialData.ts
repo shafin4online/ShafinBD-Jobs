@@ -72,6 +72,8 @@ export const INITIAL_PROFILE: UserProfile = {
   education: '',
   bio: '',
   resumeFileName: '',
+  photoUrl: '',
+  signatureUrl: '',
   githubUrl: '',
   linkedinUrl: '',
   registeredAt: '',

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useJobContext } from '../context/JobContext';
 import { ActiveTab } from '../types';
-import { AdminSubTab } from '../context/jobContextTypes';
 import { t, TranslationKey } from '../translations';
 import { APP_LOGO_URL } from '../constants';
 import { 
@@ -15,18 +14,11 @@ import {
   Info, 
   PhoneCall, 
   Lock, 
-  FileCode,
   LogOut,
   X,
   User as UserIcon,
   CheckCircle2,
-  LayoutDashboard,
-  PlusCircle,
-  Users,
-  Bell,
-  FolderKanban,
-  ShieldCheck,
-  ArrowLeftRight
+  Award
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -38,11 +30,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { 
     activeTab, 
     setActiveTab, 
-    adminSubTab,
-    setAdminSubTab,
-    role, 
-    setRole, 
-    isAdminLoggedIn,
     authUser, 
     profile, 
     logoutUser,
@@ -55,29 +42,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     onClose();
   };
 
-  const handleAdminSubTabClick = (subTab: AdminSubTab) => {
-    setActiveTab('admin');
-    setAdminSubTab(subTab);
-    onClose();
-  };
-
-  const isShowAdminMenu = isAdminLoggedIn || role === 'admin' || activeTab === 'admin';
-
-  const adminNavItems: Array<{ id: AdminSubTab; key: TranslationKey; icon: any; badge?: string }> = [
-    { id: 'overview', key: 'overview', icon: LayoutDashboard },
-    { id: 'post', key: 'postNewJob', icon: PlusCircle, badge: 'New' },
-    { id: 'users', key: 'userList', icon: Users },
-    { id: 'notifications', key: 'notificationPanel', icon: Bell },
-    { id: 'categories', key: 'categoryManagement', icon: FolderKanban },
-    { id: 'jobs', key: 'manageJobs', icon: Briefcase },
-    { id: 'applications', key: 'myApplications', icon: FileText },
-  ];
-
   const candidateNavItems: Array<{ id: ActiveTab; key: TranslationKey; icon: any; badge?: string }> = [
     { id: 'jobs', key: 'homeDashboard', icon: Home },
     { id: 'govt-jobs', key: 'govtJobs', icon: Building2, badge: 'Govt' },
     { id: 'private-jobs', key: 'privateJobs', icon: Briefcase },
     { id: 'university-admission', key: 'univAdmission', icon: GraduationCap, badge: 'New' },
+    { id: 'exam-results', key: 'examResults', icon: Award, badge: 'Result' },
     { id: 'profile', key: 'candidateProfile', icon: UserCheck },
     { id: 'applications', key: 'myApplications', icon: FileText },
   ];
@@ -138,119 +108,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-xs">
           
-          {/* SECTION: Admin Navigation Mode */}
-          {isShowAdminMenu ? (
-            <div className="space-y-1">
-              <div className="px-3 pb-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-400 flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  {t('adminNavTitle', lang)}
-                </span>
-                <span className="bg-emerald-500/20 text-emerald-300 text-[9px] px-1.5 py-0.5 rounded font-extrabold">
-                  ADMIN
-                </span>
-              </div>
-
-              {adminNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === 'admin' && adminSubTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleAdminSubTabClick(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-emerald-400'}`} />
-                      <span>{t(item.key, lang)}</span>
-                    </div>
-                    {item.badge && (
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-extrabold ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/30'
-                      }`}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-
-              {/* Mode Switcher / User View Option */}
-              <div className="pt-3 border-t border-slate-800/60">
-                <button
-                  onClick={() => {
-                    setRole('jobseeker');
-                    setActiveTab('jobs');
-                    onClose();
-                  }}
-                  className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all flex items-center justify-between cursor-pointer border border-slate-700"
-                >
-                  <span className="flex items-center gap-2 text-slate-300">
-                    <ArrowLeftRight className="w-3.5 h-3.5 text-amber-400" />
-                    <span>{t('exitAdminMode', lang)}</span>
-                  </span>
-                  <span className="text-[10px] text-amber-400 font-extrabold">
-                    {t('jobSeeker', lang)}
-                  </span>
-                </button>
-              </div>
+          {/* SECTION: User Navigation Mode */}
+          <div className="space-y-1">
+            <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+              {t('mainNav', lang)}
             </div>
-          ) : (
-            /* SECTION: Candidate / Job Seeker Navigation Mode */
-            <div className="space-y-1">
-              <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
-                {t('mainNav', lang)}
-              </div>
-              {candidateNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleTabClick(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold transition-all ${
-                      isActive
-                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                      <span>{t(item.key, lang)}</span>
-                    </div>
-                    {item.badge && (
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
-                      }`}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-
-              {/* Section: Admin Access Entry */}
-              <div className="space-y-1 pt-2 border-t border-slate-800/60">
+            {candidateNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
                 <button
-                  onClick={() => handleTabClick('admin')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold transition-all ${
-                    activeTab === 'admin'
-                      ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
-                      : 'text-purple-300 hover:bg-purple-950/40 hover:text-purple-200'
+                  key={item.id}
+                  onClick={() => handleTabClick(item.id)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                      : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <FileCode className="w-4 h-4 text-purple-400" />
-                    <span>{t('adminPanel', lang)}</span>
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                    <span>{t(item.key, lang)}</span>
                   </div>
+                  {item.badge && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold ${
+                      isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
-              </div>
-            </div>
-          )}
+              );
+            })}
+          </div>
 
           {/* Section: Company Info & Pages */}
           <div className="space-y-1 pt-2 border-t border-slate-800/60">
@@ -264,7 +154,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <button
                   key={item.id}
                   onClick={() => handleTabClick(item.id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-bold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all ${
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-bold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all cursor-pointer ${
                     isActive ? 'bg-slate-800 text-emerald-400' : ''
                   }`}
                 >

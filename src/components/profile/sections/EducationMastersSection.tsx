@@ -45,6 +45,32 @@ export const EducationMastersSection: React.FC<EducationMastersSectionProps> = (
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
+            Roll No
+          </label>
+          <input
+            type="text"
+            value={formData.mastersRoll || ''}
+            onChange={(e) => updateField('mastersRoll', e.target.value)}
+            placeholder="Masters Roll"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1">
+            Registration No
+          </label>
+          <input
+            type="text"
+            value={formData.mastersRegistration || ''}
+            onChange={(e) => updateField('mastersRegistration', e.target.value)}
+            placeholder="Masters Reg Number"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1">
             University/Inst.
           </label>
           <select

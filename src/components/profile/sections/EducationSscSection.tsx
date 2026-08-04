@@ -56,6 +56,20 @@ export const EducationSscSection: React.FC<EducationSscSectionProps> = ({
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
+            Registration No *
+          </label>
+          <input
+            type="text"
+            required
+            value={formData.sscRegistration || ''}
+            onChange={(e) => updateField('sscRegistration', e.target.value)}
+            placeholder="SSC Reg Number"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1">
             Group/Subject *
           </label>
           <select

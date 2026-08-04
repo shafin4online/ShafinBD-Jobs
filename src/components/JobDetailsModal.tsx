@@ -210,6 +210,14 @@ export const JobDetailsModal: React.FC = () => {
                   <p><strong className="text-slate-800">Email:</strong> {profile.email}</p>
                   <p><strong className="text-slate-800">Phone:</strong> {profile.phone}</p>
                   <p><strong className="text-slate-800">Skills:</strong> {profile.skills.join(', ')}</p>
+                  <div className="flex items-center gap-3 pt-1 border-t border-slate-100 text-[11px]">
+                    <span className={profile.photoUrl ? "text-emerald-700 font-bold flex items-center gap-1" : "text-slate-400 flex items-center gap-1"}>
+                      {profile.photoUrl ? "✅ ছবি সংযুক্ত (300x300)" : "❌ ছবি নেই"}
+                    </span>
+                    <span className={profile.signatureUrl ? "text-emerald-700 font-bold flex items-center gap-1" : "text-slate-400 flex items-center gap-1"}>
+                      {profile.signatureUrl ? "✅ স্বাক্ষর সংযুক্ত (300x80)" : "❌ স্বাক্ষর নেই"}
+                    </span>
+                  </div>
                 </div>
 
                 <div>

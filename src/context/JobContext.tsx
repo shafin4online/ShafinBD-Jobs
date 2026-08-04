@@ -168,7 +168,6 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (isTargetAdmin) {
       setRoleState('admin');
       setIsAdminLoggedIn(true);
-      setActiveTab('admin');
       localStorage.setItem(LOCAL_STORAGE_KEYS.ROLE, 'admin');
       localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH, 'true');
       return true;

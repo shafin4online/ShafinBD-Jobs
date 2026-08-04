@@ -74,6 +74,7 @@ export interface UserProfile {
   // SSC/Equivalent Level
   sscExam?: string;
   sscRoll?: string;
+  sscRegistration?: string;
   sscGroup?: string;
   sscBoard?: string;
   sscResult?: string;
@@ -82,6 +83,7 @@ export interface UserProfile {
   // HSC/Equivalent Level
   hscExam?: string;
   hscRoll?: string;
+  hscRegistration?: string;
   hscGroup?: string;
   hscBoard?: string;
   hscResult?: string;
@@ -89,6 +91,8 @@ export interface UserProfile {
 
   // Graduation/Equivalent Level
   gradExam?: string;
+  gradRoll?: string;
+  gradRegistration?: string;
   gradInstitute?: string;
   gradYear?: string;
   gradSubject?: string;
@@ -97,11 +101,16 @@ export interface UserProfile {
 
   // Masters/Equivalent Level
   mastersExam?: string;
+  mastersRoll?: string;
+  mastersRegistration?: string;
   mastersInstitute?: string;
   mastersYear?: string;
   mastersSubject?: string;
   mastersResult?: string;
   mastersDuration?: string;
+
+  // Contact info locking (Name, Email, Phone editable only once)
+  isContactLocked?: boolean;
 
   // Legacy / Additional fields
   title?: string;
@@ -117,6 +126,8 @@ export interface UserProfile {
   bio?: string;
   resumeFileName?: string;
   resumeUrl?: string;
+  photoUrl?: string;
+  signatureUrl?: string;
   githubUrl?: string;
   linkedinUrl?: string;
   registeredAt: string;
@@ -153,6 +164,7 @@ export type ActiveTab =
   | 'govt-jobs'
   | 'private-jobs'
   | 'university-admission'
+  | 'exam-results'
   | 'applications' 
   | 'profile' 
   | 'admin' 

@@ -8,6 +8,7 @@ import { JobDetailsModal } from './components/JobDetailsModal';
 import { UserProfile } from './components/UserProfile';
 import { AdminPanel } from './components/AdminPanel';
 import { StaticPages } from './components/pages/StaticPages';
+import { ExamResultsPage } from './components/pages/ExamResultsPage';
 import { AuthModal } from './components/AuthModal';
 import { Footer } from './components/Footer';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
@@ -246,6 +247,9 @@ const MainContent: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* TAB: EXAM RESULTS */}
+          {activeTab === 'exam-results' && <ExamResultsPage />}
 
           {/* TAB: CANDIDATE PROFILE */}
           {activeTab === 'profile' && <UserProfile />}

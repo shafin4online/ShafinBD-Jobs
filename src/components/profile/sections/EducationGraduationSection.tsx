@@ -17,13 +17,15 @@ export const EducationGraduationSection: React.FC<EducationGraduationSectionProp
           <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center">৫</span>
           <h4 className="text-sm font-bold text-slate-900">Graduation/Equivalent Level</h4>
         </div>
-        <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">স্নাতক / ডিগ্রি</span>
+        <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200">
+          Optional (ঐচ্ছিক / প্রযোজ্য ক্ষেত্রে)
+        </span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            Examination *
+            Examination (Optional)
           </label>
           <select
             value={formData.gradExam || 'Select'}
@@ -45,7 +47,33 @@ export const EducationGraduationSection: React.FC<EducationGraduationSectionProp
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            University/Inst. *
+            Roll No (Optional)
+          </label>
+          <input
+            type="text"
+            value={formData.gradRoll || ''}
+            onChange={(e) => updateField('gradRoll', e.target.value)}
+            placeholder="Graduation Roll"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1">
+            Registration No (Optional)
+          </label>
+          <input
+            type="text"
+            value={formData.gradRegistration || ''}
+            onChange={(e) => updateField('gradRegistration', e.target.value)}
+            placeholder="Graduation Reg Number"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1">
+            University/Inst. (Optional)
           </label>
           <select
             value={formData.gradInstitute || 'Select'}
@@ -60,7 +88,7 @@ export const EducationGraduationSection: React.FC<EducationGraduationSectionProp
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            Passing Year *
+            Passing Year (Optional)
           </label>
           <select
             value={formData.gradYear || 'Select'}
@@ -76,7 +104,7 @@ export const EducationGraduationSection: React.FC<EducationGraduationSectionProp
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            Subject/Degree *
+            Subject/Degree (Optional)
           </label>
           <input
             type="text"
@@ -89,7 +117,7 @@ export const EducationGraduationSection: React.FC<EducationGraduationSectionProp
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            Result *
+            Result (Optional)
           </label>
           <select
             value={formData.gradResult || 'Select'}
@@ -107,7 +135,7 @@ export const EducationGraduationSection: React.FC<EducationGraduationSectionProp
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            Course Duration *
+            Course Duration (Optional)
           </label>
           <select
             value={formData.gradDuration || 'Select'}

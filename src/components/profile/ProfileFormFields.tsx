@@ -1,6 +1,7 @@
 import React from 'react';
 import { Save, User } from 'lucide-react';
 import { PersonalDetailsSection } from './sections/PersonalDetailsSection';
+import { PhotoSignatureSection } from './sections/PhotoSignatureSection';
 import { AddressDetailsSection } from './sections/AddressDetailsSection';
 import { EducationSscSection } from './sections/EducationSscSection';
 import { EducationHscSection } from './sections/EducationHscSection';
@@ -76,6 +77,9 @@ export const ProfileFormFields: React.FC<ProfileFormFieldsProps> = ({
 
       {/* 1. Personal Details Section */}
       <PersonalDetailsSection formData={formData} updateField={updateField} />
+
+      {/* 1.1 Photo and Signature Section (300x300 photo <=100KB, 300x80 signature <=60KB, .jpg format) */}
+      <PhotoSignatureSection formData={formData} updateField={updateField} />
 
       {/* 2. Address Details Section (Includes Dynamic Upazila Filter) */}
       <AddressDetailsSection formData={formData} updateField={updateField} />

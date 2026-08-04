@@ -10,6 +10,7 @@ interface ProfileBannerProps {
     title: string;
     email: string;
     phone: string;
+    photoUrl?: string;
   };
   applicationsCount: number;
   savedJobsCount: number;
@@ -27,11 +28,11 @@ export const ProfileBanner: React.FC<ProfileBannerProps> = ({
   return (
     <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-slate-800">
       <div className="flex items-center gap-4">
-        {authUser?.photoURL ? (
+        {formData.photoUrl || authUser?.photoURL ? (
           <img
-            src={authUser.photoURL}
-            alt={authUser.displayName || 'Google Profile'}
-            className="w-16 h-16 rounded-2xl object-cover border-2 border-emerald-500 shadow-lg shadow-emerald-600/30"
+            src={formData.photoUrl || authUser?.photoURL}
+            alt={formData.fullName || 'Candidate Profile'}
+            className="w-16 h-16 rounded-2xl object-cover border-2 border-emerald-500 shadow-lg shadow-emerald-600/30 bg-white"
             referrerPolicy="no-referrer"
           />
         ) : (

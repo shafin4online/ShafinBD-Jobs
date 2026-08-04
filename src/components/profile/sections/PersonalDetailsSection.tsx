@@ -9,26 +9,66 @@ export const PersonalDetailsSection: React.FC<PersonalDetailsSectionProps> = ({
   formData,
   updateField,
 }) => {
+  const isLocked = Boolean(formData.isContactLocked);
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-        <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center">১</span>
-        <h4 className="text-sm font-bold text-slate-900">ব্যক্তিগত তথ্য (Personal Details)</h4>
+      <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+        <div className="flex items-center gap-2">
+          <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center">১</span>
+          <h4 className="text-sm font-bold text-slate-900">ব্যক্তিগত তথ্য (Personal Details)</h4>
+        </div>
+        {isLocked ? (
+          <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200 flex items-center gap-1">
+            🔒 নাম, ইমেইল ও ফোন নম্বর সংরক্ষিত ও লকড
+          </span>
+        ) : (
+          <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-200 flex items-center gap-1">
+            ⚠️ নাম, ইমেইল ও ফোন নম্বর মাত্র একবার ইডিটেবল
+          </span>
+        )}
+      </div>
+
+      {/* One-Time Editable Alert Banner */}
+      <div className={`p-3.5 rounded-2xl border text-xs font-semibold flex items-start gap-2.5 transition-all ${
+        isLocked
+          ? 'bg-slate-100 border-slate-300 text-slate-700'
+          : 'bg-amber-50 border-amber-200 text-amber-900 shadow-sm'
+      }`}>
+        <span className="text-base shrink-0">{isLocked ? '🔒' : '⚠️'}</span>
+        <div>
+          <strong className="block font-bold text-slate-900 mb-0.5">
+            {isLocked ? 'যোগাযোগ তথ্য সেভড (Non-Editable Fields Notice):' : 'গুরুত্বপূর্ণ সতর্কতা (One-Time Update Warning):'}
+          </strong>
+          {isLocked ? (
+            <span>আবেদনকারীর <strong>নাম (Name), ইমেইল (Email) এবং মোবাইল নম্বর (Phone Number)</strong> ইতোমধ্যে একবার আপডেট করে লক করা হয়েছে। নিরাপত্তার স্বার্থে এগুলো আর পরিবর্তন সম্ভব নয়।</span>
+          ) : (
+            <span>আবেদনকারীর <strong>নাম (Name), ইমেইল (Email) এবং মোবাইল নম্বর (Phone Number)</strong> মাত্র একবারের জন্যই সেভ/আপডেট করা যাবে! সেভ করার পর এগুলো চিরতরে লক হয়ে যাবে। অনুগ্রহ করে নিশ্চিত হয়ে সঠিক তথ্য টাইপ করুন।</span>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Applicant Name */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
-            Applicant's Name *
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-bold text-slate-700">
+              Applicant's Name *
+            </label>
+            {isLocked && <span className="text-[10px] text-slate-500 font-bold">🔒 Locked</span>}
+          </div>
           <input
             type="text"
             required
+            disabled={isLocked}
             value={formData.fullName || ''}
             onChange={(e) => updateField('fullName', e.target.value)}
             placeholder="e.g. MOHAMMAD SHAFIN"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+            className={`w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none transition-all ${
+              isLocked
+                ? 'bg-slate-100 text-slate-600 border-slate-300 cursor-not-allowed'
+                : 'text-slate-900 focus:ring-2 focus:ring-emerald-500 bg-white'
+            }`}
           />
         </div>
 
@@ -272,46 +312,70 @@ export const PersonalDetailsSection: React.FC<PersonalDetailsSectionProps> = ({
 
         {/* Mobile Number */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
-            Mobile Number *
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-bold text-slate-700">
+              Mobile Number *
+            </label>
+            {isLocked && <span className="text-[10px] text-slate-500 font-bold">🔒 Locked</span>}
+          </div>
           <input
             type="text"
             required
+            disabled={isLocked}
             value={formData.phone || ''}
             onChange={(e) => updateField('phone', e.target.value)}
             placeholder="017XXXXXXXX"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+            className={`w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none transition-all ${
+              isLocked
+                ? 'bg-slate-100 text-slate-600 border-slate-300 cursor-not-allowed'
+                : 'text-slate-900 focus:ring-2 focus:ring-emerald-500 bg-white'
+            }`}
           />
         </div>
 
         {/* Confirm Mobile Number */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
-            Confirm Mobile Number *
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-bold text-slate-700">
+              Confirm Mobile Number *
+            </label>
+            {isLocked && <span className="text-[10px] text-slate-500 font-bold">🔒 Locked</span>}
+          </div>
           <input
             type="text"
             required
+            disabled={isLocked}
             value={formData.confirmPhone || ''}
             onChange={(e) => updateField('confirmPhone', e.target.value)}
             placeholder="017XXXXXXXX"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+            className={`w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none transition-all ${
+              isLocked
+                ? 'bg-slate-100 text-slate-600 border-slate-300 cursor-not-allowed'
+                : 'text-slate-900 focus:ring-2 focus:ring-emerald-500 bg-white'
+            }`}
           />
         </div>
 
         {/* Email */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
-            Email *
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-bold text-slate-700">
+              Email *
+            </label>
+            {isLocked && <span className="text-[10px] text-slate-500 font-bold">🔒 Locked</span>}
+          </div>
           <input
             type="email"
             required
+            disabled={isLocked}
             value={formData.email || ''}
             onChange={(e) => updateField('email', e.target.value)}
             placeholder="applicant@example.com"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+            className={`w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none transition-all ${
+              isLocked
+                ? 'bg-slate-100 text-slate-600 border-slate-300 cursor-not-allowed'
+                : 'text-slate-900 focus:ring-2 focus:ring-emerald-500 bg-white'
+            }`}
           />
         </div>
 
