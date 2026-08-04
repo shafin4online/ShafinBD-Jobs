@@ -10,6 +10,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { StaticPages } from './components/pages/StaticPages';
 import { AuthModal } from './components/AuthModal';
 import { Footer } from './components/Footer';
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { Briefcase, Sparkles, AlertCircle, RotateCcw, Filter, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { t } from './translations';
 
@@ -267,6 +268,7 @@ const MainContent: React.FC = () => {
 
       <JobDetailsModal />
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <PWAInstallPrompt />
     </div>
   );
 };

@@ -11,20 +11,75 @@ export const UserProfile: React.FC = () => {
 
   const [activeSubTab, setActiveSubTab] = useState<'profile' | 'applications' | 'saved'>('profile');
   const [formData, setFormData] = useState({
+    // Personal Info
     fullName: profile.fullName || authUser?.displayName || '',
     fullNameBangla: profile.fullNameBangla || '',
-    email: profile.email || authUser?.email || '',
+    fatherName: profile.fatherName || '',
+    fatherNameBangla: profile.fatherNameBangla || '',
+    motherName: profile.motherName || '',
+    motherNameBangla: profile.motherNameBangla || '',
+    dateOfBirth: profile.dateOfBirth || '',
+    nationality: profile.nationality || 'Bangladeshi',
+    religion: profile.religion || '',
+    gender: profile.gender || '',
+    hasNid: profile.hasNid || 'Select',
+    nidNumber: profile.nidNumber || '',
+    hasBirthReg: profile.hasBirthReg || 'Select',
+    birthRegNumber: profile.birthRegNumber || '',
+    hasPassport: profile.hasPassport || 'Select',
+    passportNumber: profile.passportNumber || '',
+    maritalStatus: profile.maritalStatus || '',
     phone: profile.phone || '',
-    altPhone: profile.altPhone || '',
-    title: profile.title || '',
+    confirmPhone: profile.confirmPhone || profile.phone || '',
+    email: profile.email || authUser?.email || '',
+    quota: profile.quota || '',
+    deptStatus: profile.deptStatus || '',
+
+    // Address
+    careOf: profile.careOf || '',
+    villageRoad: profile.villageRoad || '',
+    district: profile.district || '',
+    upazila: profile.upazila || '',
+    postOffice: profile.postOffice || '',
+    postCode: profile.postCode || '',
+
+    // SSC
+    sscExam: profile.sscExam || '',
+    sscRoll: profile.sscRoll || '',
+    sscGroup: profile.sscGroup || '',
+    sscBoard: profile.sscBoard || '',
+    sscResult: profile.sscResult || '',
+    sscYear: profile.sscYear || '',
+
+    // HSC
+    hscExam: profile.hscExam || '',
+    hscRoll: profile.hscRoll || '',
+    hscGroup: profile.hscGroup || '',
+    hscBoard: profile.hscBoard || '',
+    hscResult: profile.hscResult || '',
+    hscYear: profile.hscYear || '',
+
+    // Graduation
+    gradExam: profile.gradExam || '',
+    gradInstitute: profile.gradInstitute || '',
+    gradYear: profile.gradYear || '',
+    gradSubject: profile.gradSubject || '',
+    gradResult: profile.gradResult || '',
+    gradDuration: profile.gradDuration || '',
+
+    // Masters
+    mastersExam: profile.mastersExam || '',
+    mastersInstitute: profile.mastersInstitute || '',
+    mastersYear: profile.mastersYear || '',
+    mastersSubject: profile.mastersSubject || '',
+    mastersResult: profile.mastersResult || '',
+    mastersDuration: profile.mastersDuration || '',
+
+    // Legacy/Additional
+    title: profile.title || 'Job Candidate',
     location: profile.location || 'Bangladesh',
     presentAddress: profile.presentAddress || '',
     permanentAddress: profile.permanentAddress || '',
-    fatherName: profile.fatherName || '',
-    motherName: profile.motherName || '',
-    dateOfBirth: profile.dateOfBirth || '',
-    gender: profile.gender || 'Male',
-    nidOrPassport: profile.nidOrPassport || '',
     expectedSalary: profile.expectedSalary || '',
     experience: profile.experience || '',
     education: profile.education || '',
@@ -52,24 +107,22 @@ export const UserProfile: React.FC = () => {
     const fields = [
       formData.fullName,
       formData.fullNameBangla,
-      formData.email,
-      formData.phone,
-      formData.title,
-      formData.presentAddress,
-      formData.permanentAddress,
       formData.fatherName,
       formData.motherName,
       formData.dateOfBirth,
       formData.gender,
-      formData.education,
-      formData.experience,
-      formData.bio,
-      formData.expectedSalary,
-      formData.resumeFileName,
+      formData.phone,
+      formData.email,
+      formData.district,
+      formData.upazila,
+      formData.sscExam,
+      formData.sscRoll,
+      formData.hscExam,
+      formData.hscRoll,
+      formData.gradExam,
     ];
-    const filledCount = fields.filter((f) => f && f.trim().length > 0).length + (skillsList.length > 0 ? 1 : 0);
-    const totalCount = fields.length + 1;
-    return Math.round((filledCount / totalCount) * 100);
+    const filledCount = fields.filter((f) => f && f.trim().length > 0 && f !== 'Select').length;
+    return Math.min(100, Math.round((filledCount / fields.length) * 100));
   };
 
   const completeness = calculateCompleteness();

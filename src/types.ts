@@ -39,25 +39,82 @@ export interface Job {
 
 export interface UserProfile {
   id: string;
+  // Personal Info
   fullName: string;
   fullNameBangla?: string;
-  email: string;
+  fatherName?: string;
+  fatherNameBangla?: string;
+  motherName?: string;
+  motherNameBangla?: string;
+  dateOfBirth?: string;
+  nationality?: string;
+  religion?: string;
+  gender?: string;
+  hasNid?: 'Yes' | 'No' | string;
+  nidNumber?: string;
+  hasBirthReg?: 'Yes' | 'No' | string;
+  birthRegNumber?: string;
+  hasPassport?: 'Yes' | 'No' | string;
+  passportNumber?: string;
+  maritalStatus?: string;
   phone: string;
-  altPhone?: string;
-  title: string; // e.g. "Frontend React Developer"
-  location: string;
+  confirmPhone?: string;
+  email: string;
+  quota?: string;
+  deptStatus?: string;
+
+  // Address Details
+  careOf?: string;
+  villageRoad?: string;
+  district?: string;
+  upazila?: string;
+  postOffice?: string;
+  postCode?: string;
+
+  // SSC/Equivalent Level
+  sscExam?: string;
+  sscRoll?: string;
+  sscGroup?: string;
+  sscBoard?: string;
+  sscResult?: string;
+  sscYear?: string;
+
+  // HSC/Equivalent Level
+  hscExam?: string;
+  hscRoll?: string;
+  hscGroup?: string;
+  hscBoard?: string;
+  hscResult?: string;
+  hscYear?: string;
+
+  // Graduation/Equivalent Level
+  gradExam?: string;
+  gradInstitute?: string;
+  gradYear?: string;
+  gradSubject?: string;
+  gradResult?: string;
+  gradDuration?: string;
+
+  // Masters/Equivalent Level
+  mastersExam?: string;
+  mastersInstitute?: string;
+  mastersYear?: string;
+  mastersSubject?: string;
+  mastersResult?: string;
+  mastersDuration?: string;
+
+  // Legacy / Additional fields
+  title?: string;
+  location?: string;
   presentAddress?: string;
   permanentAddress?: string;
-  fatherName?: string;
-  motherName?: string;
-  dateOfBirth?: string;
-  gender?: string;
   nidOrPassport?: string;
+  altPhone?: string;
   expectedSalary?: string;
   skills: string[];
-  experience: string;
-  education: string;
-  bio: string;
+  experience?: string;
+  education?: string;
+  bio?: string;
   resumeFileName?: string;
   resumeUrl?: string;
   githubUrl?: string;

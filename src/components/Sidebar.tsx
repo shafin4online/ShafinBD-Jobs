@@ -3,6 +3,7 @@ import { useJobContext } from '../context/JobContext';
 import { ActiveTab } from '../types';
 import { AdminSubTab } from '../context/jobContextTypes';
 import { t, TranslationKey } from '../translations';
+import { APP_LOGO_URL } from '../constants';
 import { 
   Home, 
   Building2, 
@@ -107,8 +108,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         {/* Brand Header */}
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center font-black text-white text-lg shadow-lg shadow-emerald-500/20">
-              S
+            <div className="w-10 h-10 flex items-center justify-center shrink-0 overflow-hidden">
+              <img 
+                src={APP_LOGO_URL} 
+                alt="ShafinBD Jobs Logo" 
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <h1 className="text-sm font-extrabold text-white tracking-tight leading-none flex items-center gap-1">

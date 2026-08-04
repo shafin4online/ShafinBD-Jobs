@@ -2,6 +2,7 @@ import React from 'react';
 import { useJobContext } from '../context/JobContext';
 import { Briefcase } from 'lucide-react';
 import { t } from '../translations';
+import { APP_LOGO_URL } from '../constants';
 
 export const Footer: React.FC = () => {
   const { setActiveTab, lang } = useJobContext();
@@ -16,8 +17,13 @@ export const Footer: React.FC = () => {
               onClick={() => setActiveTab('jobs')}
               className="flex items-center gap-2.5 cursor-pointer group"
             >
-              <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
-                <Briefcase className="w-5 h-5" />
+              <div className="w-10 h-10 flex items-center justify-center shrink-0 overflow-hidden">
+                <img 
+                  src={APP_LOGO_URL} 
+                  alt="ShafinBD Jobs Logo" 
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="text-xl font-black text-white">
                 ShafinBD<span className="text-emerald-500">Jobs</span>

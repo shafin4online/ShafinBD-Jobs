@@ -2,6 +2,7 @@ import React from 'react';
 import { useJobContext } from '../context/JobContext';
 import { Menu, Search, Bookmark, Globe, User } from 'lucide-react';
 import { t } from '../translations';
+import { APP_LOGO_URL } from '../constants';
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
@@ -35,8 +36,13 @@ export const TopHeader: React.FC<TopHeaderProps> = ({ onToggleSidebar }) => {
           </button>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-slate-900 text-emerald-400 font-black text-lg flex items-center justify-center border border-slate-800 shadow-xs">
-              S
+            <div className="w-10 h-10 flex items-center justify-center shrink-0 overflow-hidden">
+              <img 
+                src={APP_LOGO_URL} 
+                alt="ShafinBD Jobs Logo" 
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div className="hidden sm:block">
               <span className="font-extrabold text-slate-900 text-sm tracking-tight block">

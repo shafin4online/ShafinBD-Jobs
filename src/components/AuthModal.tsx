@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useJobContext } from '../context/JobContext';
 import { X, Mail, Lock, AlertTriangle, User as UserIcon, Copy, Check } from 'lucide-react';
+import { APP_LOGO_URL } from '../constants';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -89,9 +90,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-slate-900 text-white">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
-              S
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 flex items-center justify-center shrink-0 overflow-hidden">
+              <img 
+                src={APP_LOGO_URL} 
+                alt="ShafinBD Jobs Logo" 
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <h3 className="text-base font-bold text-white">ShafinBD Jobs Registration & Login</h3>
