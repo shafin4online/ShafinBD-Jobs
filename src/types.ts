@@ -39,6 +39,7 @@ export interface Job {
 
 export interface UserProfile {
   id: string;
+  isAccountActive?: boolean;
   // Personal Info
   fullName: string;
   fullNameBangla?: string;

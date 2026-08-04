@@ -37,6 +37,8 @@ export interface JobContextType {
   setAuthError: (err: any) => void;
   showAuthModal: boolean;
   setShowAuthModal: (show: boolean) => void;
+  showActivationModal: boolean;
+  setShowActivationModal: (show: boolean) => void;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   registerWithEmail: (email: string, pass: string, name: string) => Promise<void>;
@@ -62,6 +64,8 @@ export interface JobContextType {
   setSelectedJobForModal: (job: Job | null) => void;
   lang: 'BN' | 'EN';
   setLang: (lang: 'BN' | 'EN') => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
 export const DEFAULT_FILTERS: FilterState = {

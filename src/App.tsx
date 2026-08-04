@@ -10,6 +10,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { StaticPages } from './components/pages/StaticPages';
 import { ExamResultsPage } from './components/pages/ExamResultsPage';
 import { AuthModal } from './components/AuthModal';
+import { AccountActivationModal } from './components/AccountActivationModal';
 import { Footer } from './components/Footer';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { Briefcase, Sparkles, AlertCircle, RotateCcw, Filter, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
@@ -23,6 +24,8 @@ const MainContent: React.FC = () => {
     resetFilters, 
     showAuthModal, 
     setShowAuthModal,
+    showActivationModal,
+    setShowActivationModal,
     lang
   } = useJobContext();
 
@@ -272,6 +275,7 @@ const MainContent: React.FC = () => {
 
       <JobDetailsModal />
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <AccountActivationModal isOpen={showActivationModal} onClose={() => setShowActivationModal(false)} />
       <PWAInstallPrompt />
     </div>
   );

@@ -86,7 +86,7 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden space-y-6 p-6 sm:p-8 relative">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden space-y-6 p-6 sm:p-8 relative transition-colors">
       {/* Toast Notification for Section Updates */}
       {sectionToast && (
         <div className="fixed top-20 right-6 z-50 bg-emerald-800 text-white font-bold text-xs px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 animate-bounce border border-emerald-500">
@@ -95,86 +95,18 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
         </div>
       )}
 
-      {/* Header Banner */}
-      <div className="bg-slate-900 text-white rounded-2xl p-6 relative overflow-hidden">
-        <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10 border-b border-slate-800 pb-5">
-          <div className="flex items-center gap-4">
-            {formData.photoUrl ? (
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-emerald-500 overflow-hidden bg-white shrink-0 p-0.5 shadow-lg">
-                <img
-                  src={formData.photoUrl}
-                  alt={formData.fullName}
-                  className="w-full h-full object-cover rounded-xl"
-                />
-              </div>
-            ) : (
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-800 border-2 border-slate-700 flex items-center justify-center shrink-0">
-                <User className="w-9 h-9 text-slate-400" />
-              </div>
-            )}
-
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl sm:text-2xl font-extrabold text-white">
-                  {formData.fullName || 'নাম প্রদান করা হয়নি'}
-                </h2>
-                {formData.isContactLocked && (
-                  <span className="text-[10px] font-bold text-slate-300 bg-slate-800 border border-slate-700 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <Lock className="w-3 h-3 text-emerald-400" /> সংরক্ষিত
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-emerald-400 font-bold mt-0.5">
-                {formData.fullNameBangla || 'আবেদনকারীর নাম (বাংলা)'}
-              </p>
-
-              <div className="flex items-center gap-3 mt-2 text-xs text-slate-300 flex-wrap">
-                <span className="flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-slate-400" />{' '}
-                  {formData.email || 'N/A'}
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-slate-400" />{' '}
-                  {formData.phone || 'N/A'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={onEditClick}
-            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-600/30 transition-all active:scale-95 cursor-pointer shrink-0"
-          >
-            <Edit3 className="w-4 h-4" />
-            <span>সকল তথ্য একসাথে এডিট (Full Edit)</span>
-          </button>
+      {/* Action bar for full edit */}
+      <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/80 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/60">
+        <div className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+          <span>📋 প্রোফাইল তথ্যাবলী (Profile Summary)</span>
         </div>
-
-        {/* Progress bar */}
-        <div className="pt-4 space-y-1.5">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
-            <span>
-              প্রোফাইল পূর্ণতা:{' '}
-              <strong className="text-emerald-400 font-extrabold">
-                {completeness}%
-              </strong>
-            </span>
-            <span className="text-[11px] text-slate-400">
-              {completeness === 100
-                ? '✅ ১০০% তথ্য হালনাগাদ করা হয়েছে'
-                : 'প্রতিটি সেকশনের "এডিট" বাটনে ক্লিক করে তথ্য আলাদাভাবে আপডেট করা যাবে'}
-            </span>
-          </div>
-          <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-            <div
-              className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-              style={{ width: `${completeness}%` }}
-            />
-          </div>
-        </div>
+        <button
+          onClick={onEditClick}
+          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl flex items-center gap-2 shadow-md shadow-emerald-600/20 transition-all active:scale-95 cursor-pointer shrink-0"
+        >
+          <Edit3 className="w-3.5 h-3.5" />
+          <span>সকল তথ্য একসাথে এডিট (Full Edit)</span>
+        </button>
       </div>
 
       {/* 1. SECTION: Photo and Signature */}

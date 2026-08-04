@@ -6,12 +6,14 @@ import { ProfileFormFields } from './profile/ProfileFormFields';
 import { ProfileDetailsView } from './profile/ProfileDetailsView';
 import { MyApplicationsList } from './profile/MyApplicationsList';
 import { SavedJobsList } from './profile/SavedJobsList';
+import { CvDownloadModal } from './profile/CvDownloadModal';
 
 export const UserProfile: React.FC = () => {
   const { profile, updateProfile, applications, jobs, authUser } = useJobContext();
 
   const [activeSubTab, setActiveSubTab] = useState<'profile' | 'applications' | 'saved'>('profile');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isCvModalOpen, setIsCvModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     // Personal Info
@@ -202,8 +204,18 @@ export const UserProfile: React.FC = () => {
         activeSubTab={activeSubTab}
         setActiveSubTab={setActiveSubTab}
         formData={formData}
+        completeness={completeness}
         applicationsCount={applications.length}
         savedJobsCount={savedJobsList.length}
+        isEditingProfile={isEditingProfile}
+        setIsEditingProfile={setIsEditingProfile}
+        onDownloadCvClick={() => setIsCvModalOpen(true)}
+      />
+
+      <CvDownloadModal
+        isOpen={isCvModalOpen}
+        onClose={() => setIsCvModalOpen(false)}
+        formData={formData}
       />
 
       {saveToast && (

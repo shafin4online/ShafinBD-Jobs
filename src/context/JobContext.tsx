@@ -113,6 +113,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [authError, setAuthError] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [showActivationModal, setShowActivationModal] = useState<boolean>(false);
 
   const [role, setRoleState] = useState<'jobseeker' | 'admin'>(() => {
     return (localStorage.getItem(LOCAL_STORAGE_KEYS.ROLE) as 'jobseeker' | 'admin') || 'jobseeker';
@@ -122,7 +123,69 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH) === 'true';
   });
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>('jobs');
+  const [activeTab, setActiveTabState] = useState<ActiveTab>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.replace(/^\//, '');
+      const validTabs: ActiveTab[] = [
+        'jobs',
+        'govt-jobs',
+        'private-jobs',
+        'university-admission',
+        'exam-results',
+        'applications',
+        'profile',
+        'admin',
+        'privacy-policy',
+        'terms',
+        'about',
+        'contact',
+      ];
+      if (validTabs.includes(path as ActiveTab)) {
+        return path as ActiveTab;
+      }
+    }
+    return 'jobs';
+  });
+
+  const setActiveTab = (tab: ActiveTab) => {
+    setActiveTabState(tab);
+    if (typeof window !== 'undefined') {
+      const targetPath = tab === 'jobs' ? '/' : `/${tab}`;
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({ tab }, '', targetPath);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname.replace(/^\//, '');
+        const validTabs: ActiveTab[] = [
+          'jobs',
+          'govt-jobs',
+          'private-jobs',
+          'university-admission',
+          'exam-results',
+          'applications',
+          'profile',
+          'admin',
+          'privacy-policy',
+          'terms',
+          'about',
+          'contact',
+        ];
+        if (validTabs.includes(path as ActiveTab)) {
+          setActiveTabState(path as ActiveTab);
+        } else if (path === '') {
+          setActiveTabState('jobs');
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   const [adminSubTab, setAdminSubTab] = useState<AdminSubTab>('overview');
   const [categoriesList, setCategoriesList] = useState<string[]>(INITIAL_CATEGORIES);
   const [notificationsList, setNotificationsList] = useState<AdminNotification[]>([
@@ -141,6 +204,22 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedJobForModal, setSelectedJobForModal] = useState<Job | null>(null);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(true);
   const [lang, setLang] = useState<'BN' | 'EN'>('BN');
+
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
   const addCategory = (catName: string) => {
     if (!catName.trim()) return;
@@ -250,8 +329,17 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       setIsAuthLoading(true); setAuthError(null);
       const res = await signInWithPopup(auth, googleProvider);
-      if (res.user?.email) {
-        checkAndSetAdmin(res.user.email);
+      if (res.user) {
+        if (res.user.email) {
+          checkAndSetAdmin(res.user.email);
+        }
+        const currentPhone = profile.phone || res.user.phoneNumber || '';
+        const currentName = profile.fullName || res.user.displayName || '';
+        if (!currentPhone || !currentName || !profile.isAccountActive) {
+          setShowActivationModal(true);
+        } else {
+          setActiveTab('profile');
+        }
       }
     } catch (error: any) {
       setAuthError(error); setShowAuthModal(true); throw error;
@@ -428,12 +516,13 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         adminSubTab, setAdminSubTab, categoriesList, addCategory, deleteCategory,
         notificationsList, sendNotification, userList, filters,
         isFirebaseConnected, firebaseProjectId: firebaseConfig.projectId, isAuthLoading,
-        authError, setAuthError, showAuthModal, setShowAuthModal, signInWithGoogle,
+        authError, setAuthError, showAuthModal, setShowAuthModal,
+        showActivationModal, setShowActivationModal, signInWithGoogle,
         signInWithEmail, registerWithEmail, directProfileLogin, logoutUser, addJob,
         updateJob, deleteJob, toggleJobStatus, toggleJobFeatured, updateProfile, applyForJob,
         updateApplicationStatus, toggleSaveJob, setRole, loginAdmin, logoutAdmin, setFilters,
         resetFilters, setActiveTab, resetAllData, selectedJobForModal, setSelectedJobForModal,
-        lang, setLang,
+        lang, setLang, isDarkMode, toggleDarkMode,
       }}
     >
       {children}
