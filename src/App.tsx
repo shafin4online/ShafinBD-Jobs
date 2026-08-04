@@ -13,6 +13,7 @@ import { AuthModal } from './components/AuthModal';
 import { AccountActivationModal } from './components/AccountActivationModal';
 import { Footer } from './components/Footer';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
+import { NotificationPermissionModal } from './components/NotificationPermissionModal';
 import { Briefcase, Sparkles, AlertCircle, RotateCcw, Filter, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { t } from './translations';
 
@@ -277,6 +278,7 @@ const MainContent: React.FC = () => {
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
       <AccountActivationModal isOpen={showActivationModal} onClose={() => setShowActivationModal(false)} />
       <PWAInstallPrompt />
+      <NotificationPermissionModal />
     </div>
   );
 };

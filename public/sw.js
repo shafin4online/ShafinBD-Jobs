@@ -52,3 +52,51 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// Push notification listener
+self.addEventListener('push', (event) => {
+  const APP_ICON = "https://lh3.googleusercontent.com/d/16e44uH8RVDhPCQtepuf_92JTg91rK0Az";
+  let title = "ShafinBD Jobs - নতুন চাকরির বিজ্ঞপ্তি";
+  let body = "নতুন সরকারি ও বেসরকারি চাকরির বিজ্ঞপ্তি দেখতে ট্যাপ করুন।";
+  let url = "/";
+
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      title = data.title || title;
+      body = data.body || body;
+      url = data.url || url;
+    } catch (e) {
+      body = event.data.text();
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: APP_ICON,
+      badge: APP_ICON,
+      vibrate: [200, 100, 200],
+      data: { url }
+    })
+  );
+});
+
+// Notification click listener
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});

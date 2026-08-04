@@ -24,6 +24,7 @@ import {
 } from '../lib/firebase';
 import { JobContextType, DEFAULT_FILTERS, LOCAL_STORAGE_KEYS, AdminSubTab, AdminNotification } from './jobContextTypes';
 import { createGoogleProfile, createNewJobObject, createNewApplicationObject } from './jobHelpers';
+import { triggerPushBroadcast } from '../lib/pushNotification';
 
 const JobContext = createContext<JobContextType | undefined>(undefined);
 
@@ -239,6 +240,11 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       sentAt: new Date().toLocaleString(),
     };
     setNotificationsList((prev) => [newNotif, ...prev]);
+    triggerPushBroadcast({
+      title: notif.title,
+      body: notif.message,
+      url: '/'
+    });
   };
 
   const checkAndSetAdmin = (email?: string | null) => {
@@ -401,6 +407,14 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newJob = createNewJobObject(jobData);
     setJobs((prev) => [newJob, ...prev]);
     saveJobToFirestore(newJob);
+
+    // Broadcast push notification to user devices
+    triggerPushBroadcast({
+      title: `নতুন নিয়োগ বিজ্ঞপ্তি: ${jobData.title}`,
+      body: `${jobData.company} (${jobData.location}) | আবেদনের শেষ তারিখ: ${jobData.deadline}`,
+      jobCategory: jobData.category,
+      url: '/'
+    });
   };
 
   const updateJob = (updatedJob: Job) => {
