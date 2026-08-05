@@ -1,13 +1,16 @@
-import React from 'react';
-import { Job, JobCategory, JobType, ExperienceLevel } from '../../types';
-import { useJobContext } from '../../context/JobContext';
-import { Sparkles, Save, RotateCcw } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Job, PostCategoryType } from '../../types';
+import { Sparkles, Save, RotateCcw, Upload, Image as ImageIcon, Trash2, Building2 } from 'lucide-react';
+import { GovtJobForm } from './forms/GovtJobForm';
+import { PrivateJobForm } from './forms/PrivateJobForm';
+import { ExamResultForm } from './forms/ExamResultForm';
+import { UniversityAdmissionForm } from './forms/UniversityAdmissionForm';
 
 interface JobFormProps {
   editingJob: Job | null;
   setEditingJob: (job: Job | null) => void;
   jobForm: any;
-  setJobForm: (form: any) => void;
+  setJobForm: React.Dispatch<React.SetStateAction<any>>;
   handleFormSubmit: (e: React.FormEvent) => void;
   handleAiGenerate: () => void;
   isGeneratingAi: boolean;
@@ -26,16 +29,66 @@ export const JobForm: React.FC<JobFormProps> = ({
   aiNotice,
   formSuccess,
 }) => {
-  const { categoriesList } = useJobContext();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const postType: PostCategoryType = jobForm.postType || 'govt';
+
+  const handlePostTypeChange = (newType: PostCategoryType) => {
+    let category = 'Govt. Job';
+    if (newType === 'private') category = 'Private Job';
+    if (newType === 'exam-result') category = 'Software & IT';
+    if (newType === 'university') category = 'University Admission Notice';
+
+    setJobForm((prev: any) => ({
+      ...prev,
+      postType: newType,
+      category,
+    }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('ছবির সাইজ সর্বাধিক ৫ MB হওয়া আবশ্যক!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setJobForm((prev: any) => ({
+          ...prev,
+          imageUrl: base64String,
+          companyLogo: base64String,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setJobForm((prev: any) => ({
+      ...prev,
+      imageUrl: '',
+      companyLogo: '',
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   return (
-    <form onSubmit={handleFormSubmit} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
-      <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+    <form onSubmit={handleFormSubmit} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+      {/* Top Header */}
+      <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-extrabold text-slate-900">
-            {editingJob ? 'সম্পাদনা করুন (Edit Job Posting)' : 'নতুন জব সার্কুলার প্রকাশ করুন (Post New Job)'}
+          <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-emerald-600" />
+            <span>{editingJob ? 'সার্কুলার সম্পাদনা করুন (Edit Post)' : 'নতুন পোস্ট বা সার্কুলার যুক্ত করুন (Add New Post)'}</span>
           </h3>
-          <p className="text-xs text-slate-500">সরকারি, বেসরকারি চাকরি বা ভর্তি বিজ্ঞপ্তি ডাটাবেজে যুক্ত করুন</p>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            ক্যাটাগরি অনুযায়ী সরকারি চাকরি, বেসরকারি চাকরি, রেজাল্ট বা ভর্তি বিজ্ঞপ্তি পাবলিশ করুন
+          </p>
         </div>
 
         {editingJob && (
@@ -44,18 +97,30 @@ export const JobForm: React.FC<JobFormProps> = ({
             onClick={() => {
               setEditingJob(null);
               setJobForm({
+                postType: 'govt',
                 title: '',
-                company: 'ShafinBD Tech',
-                companyLogo: 'https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=120&auto=format&fit=crop&q=80',
-                location: 'Dhaka (Hybrid)',
+                company: '',
+                companyLogo: '',
+                location: 'বাংলাদেশ (Bangladesh)',
                 jobType: 'Full-time',
-                category: categoriesList[0] || 'Software & IT',
-                salaryRange: '৳50,000 - ৳75,000 / month',
-                experienceLevel: 'Mid Level',
+                category: 'Govt. Job',
+                salaryRange: '',
+                experienceLevel: 'Entry Level',
                 description: '',
-                requirementsText: '• 2+ years relevant experience\n• Strong communication skills',
-                responsibilitiesText: '• Execute daily tasks and deliverables',
-                deadline: '2026-09-15',
+                requirementsText: '',
+                responsibilitiesText: '',
+                deadline: '',
+                startDate: '',
+                position: '',
+                vacancies: '',
+                applicationFee: '',
+                applicationUrl: '',
+                circularUrl: '',
+                resultDate: '',
+                examDate: '',
+                passedCount: '',
+                writtenExamDate: '',
+                imageUrl: '',
                 status: 'active',
                 featured: true,
               });
@@ -63,127 +128,113 @@ export const JobForm: React.FC<JobFormProps> = ({
             className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>বাতিল করুন</span>
+            <span>সম্পাদনা বাতিল</span>
           </button>
         )}
       </div>
 
       {formSuccess && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-bold">
-          ✅ {formSuccess}
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-extrabold flex items-center gap-2 shadow-sm">
+          <span>✅</span>
+          <span>{formSuccess}</span>
         </div>
       )}
 
-      {/* Inputs Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">জব টাইটেল (Job Title) *</label>
-          <input
-            type="text"
-            required
-            value={jobForm.title}
-            onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })}
-            placeholder="যেমন: Senior React Developer / সহকারী শিক্ষক"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
-          />
-        </div>
+      {/* STEP 1: CATEGORY / POST TYPE SELECTION DROPDOWN */}
+      <div className="p-4 bg-slate-900 rounded-2xl text-white space-y-2 border border-slate-800">
+        <label className="block text-xs font-black text-emerald-400 uppercase tracking-wider">
+          ১. পোস্টের টাইপ বা ক্যাটাগরি নির্বাচন করুন (Select Post Category) *
+        </label>
+        <select
+          value={postType}
+          onChange={(e) => handlePostTypeChange(e.target.value as PostCategoryType)}
+          className="w-full px-4 py-3 bg-slate-800 text-white font-extrabold text-sm rounded-xl border border-slate-700 focus:border-emerald-500 outline-none cursor-pointer"
+        >
+          <option value="govt">সরকারি চাকরি (Govt Job)</option>
+          <option value="private">বেসরকারি চাকরি (Private Job)</option>
+          <option value="exam-result">পরীক্ষার রেজাল্ট (Exam Result)</option>
+          <option value="university">বিশ্ববিদ্যালয় ভর্তি (University Admission)</option>
+        </select>
+        <p className="text-[11px] text-slate-400">
+          * নির্বাচিত অপশন অনুযায়ী নিচের প্রয়োজনীয় ফরম ফিন্ডগুলো পরিবর্তিত হবে।
+        </p>
+      </div>
 
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">কোম্পানি / প্রতিষ্ঠানের নাম *</label>
-          <input
-            type="text"
-            required
-            value={jobForm.company}
-            onChange={(e) => setJobForm({ ...jobForm, company: e.target.value })}
-            placeholder="যেমন: Bangladesh Bank / ShafinBD Tech"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
-          />
-        </div>
+      {/* STEP 2: DYNAMIC MODULAR FORM FIELDS BASED ON SELECTED POST TYPE */}
+      {postType === 'govt' && (
+        <GovtJobForm jobForm={jobForm} setJobForm={setJobForm} />
+      )}
+      {postType === 'private' && (
+        <PrivateJobForm jobForm={jobForm} setJobForm={setJobForm} />
+      )}
+      {postType === 'exam-result' && (
+        <ExamResultForm jobForm={jobForm} setJobForm={setJobForm} />
+      )}
+      {postType === 'university' && (
+        <UniversityAdmissionForm jobForm={jobForm} setJobForm={setJobForm} />
+      )}
 
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">ক্যাটাগরি (Category) *</label>
-          <select
-            value={jobForm.category}
-            onChange={(e) => setJobForm({ ...jobForm, category: e.target.value as JobCategory })}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
+      {/* IMAGE UPLOAD SECTION (Saved in Base64) - Standard Across All Types */}
+      <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+        <label className="block text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+          <ImageIcon className="w-4 h-4 text-emerald-600" />
+          <span>সার্কুলার / ফলাফলের ছবি যুক্ত করুন (Minimum 1 Image Upload - Saved in Base64)</span>
+        </label>
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+            id="circular-image-upload"
+          />
+
+          <label
+            htmlFor="circular-image-upload"
+            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer shadow-sm transition-all"
           >
-            {categoriesList.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
+            <Upload className="w-4 h-4 text-emerald-400" />
+            <span>{jobForm.imageUrl ? 'ছবি পরিবর্তন করুন' : 'ছবি আপলোড করুন (Base64)'}</span>
+          </label>
 
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">জব টাইপ (Job Type)</label>
-          <select
-            value={jobForm.jobType}
-            onChange={(e) => setJobForm({ ...jobForm, jobType: e.target.value as JobType })}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
-          >
-            <option value="Full-time">Full-time</option>
-            <option value="Part-time">Part-time</option>
-            <option value="Remote">Remote</option>
-            <option value="Contract">Contract</option>
-            <option value="Internship">Internship</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">লোকেশন (Location) *</label>
-          <input
-            type="text"
-            required
-            value={jobForm.location}
-            onChange={(e) => setJobForm({ ...jobForm, location: e.target.value })}
-            placeholder="Dhaka, Bangladesh"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">বেতন স্কেল (Salary Range)</label>
-          <input
-            type="text"
-            value={jobForm.salaryRange}
-            onChange={(e) => setJobForm({ ...jobForm, salaryRange: e.target.value })}
-            placeholder="৳৫০,০০০ - ৳৭৫,০০০ / মাস"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">আবেদনের শেষ তারিখ (Deadline)</label>
-          <input
-            type="date"
-            value={jobForm.deadline}
-            onChange={(e) => setJobForm({ ...jobForm, deadline: e.target.value })}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">ফিচার্ড সার্ভিস (Featured)</label>
-          <select
-            value={jobForm.featured ? 'yes' : 'no'}
-            onChange={(e) => setJobForm({ ...jobForm, featured: e.target.value === 'yes' })}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
-          >
-            <option value="yes">হ্যাঁ (Featured Top)</option>
-            <option value="no">না (Regular)</option>
-          </select>
+          {jobForm.imageUrl ? (
+            <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-slate-200">
+              <img
+                src={jobForm.imageUrl}
+                alt="Uploaded Circular"
+                className="w-12 h-12 rounded-lg object-cover border border-emerald-300"
+              />
+              <div>
+                <p className="text-[11px] font-bold text-emerald-700">ছবি আপলোড সফল হয়েছে</p>
+                <span className="text-[9px] text-slate-400">Base64 ডাটা স্ট্রাকচারে সংরক্ষিত</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                title="ছবিটি মুছুন"
+                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg ml-auto cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500 font-medium">
+              কোনো ছবি আপলোড করা হয়নি। (JPEG, PNG বা WebP ফরম্যাট)
+            </p>
+          )}
         </div>
       </div>
 
-      {/* AI Generate Prompt Box */}
+      {/* AI Generate Assistant Box */}
       <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h4 className="text-xs font-extrabold text-emerald-900 flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-emerald-600" />
-            <span>AI অটো-ডেসক্রিপশন জেনারেটর</span>
+            <span>AI বিবরণী জেনারেটর (AI Content Generator)</span>
           </h4>
-          <p className="text-[11px] text-emerald-700 mt-0.5">টাইটেল অনুযায়ী AI দিয়ে বিবরণ তৈরি করুন</p>
+          <p className="text-[11px] text-emerald-700 mt-0.5">টাইটেল অনুযায়ী AI দিয়ে বিবরণ তৈরি করতে পারেন</p>
           {aiNotice && <p className="text-[10px] text-emerald-800 font-bold mt-1">{aiNotice}</p>}
         </div>
 
@@ -191,55 +242,21 @@ export const JobForm: React.FC<JobFormProps> = ({
           type="button"
           onClick={handleAiGenerate}
           disabled={isGeneratingAi}
-          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>{isGeneratingAi ? 'জেনারেট হচ্ছে...' : 'AI বিবরণ জেনারেট'}</span>
+          <span>{isGeneratingAi ? 'জেনারেট হচ্ছে...' : 'AI বিবরণ তৈরি করুন'}</span>
         </button>
       </div>
 
-      {/* Description & Text Areas */}
-      <div>
-        <label className="block text-xs font-bold text-slate-700 mb-1">জব ডেসক্রিপশন (Job Description) *</label>
-        <textarea
-          rows={3}
-          required
-          value={jobForm.description}
-          onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })}
-          placeholder="সার্কুলারের মূল বিষয়বস্তু লিখুন..."
-          className="w-full p-3 rounded-xl border border-slate-200 text-xs font-medium"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">আবেদনের যোগ্যতা (Requirements - newline separated)</label>
-          <textarea
-            rows={3}
-            value={jobForm.requirementsText}
-            onChange={(e) => setJobForm({ ...jobForm, requirementsText: e.target.value })}
-            className="w-full p-3 rounded-xl border border-slate-200 text-xs font-medium"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">দায়িত্বসমূহ (Responsibilities - newline separated)</label>
-          <textarea
-            rows={3}
-            value={jobForm.responsibilitiesText}
-            onChange={(e) => setJobForm({ ...jobForm, responsibilitiesText: e.target.value })}
-            className="w-full p-3 rounded-xl border border-slate-200 text-xs font-medium"
-          />
-        </div>
-      </div>
-
+      {/* SUBMIT BUTTON */}
       <div className="pt-2 flex justify-end">
         <button
           type="submit"
-          className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer"
+          className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs sm:text-sm rounded-2xl flex items-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer active:scale-95 transition-all"
         >
           <Save className="w-4 h-4" />
-          <span>{editingJob ? 'সার্কুলার আপডেট করুন' : 'সার্কুলার পাবলিশ করুন'}</span>
+          <span>{editingJob ? 'সার্কুলার / পোস্ট আপডেট করুন' : 'সার্কুলার / পোস্ট পাবলিশ করুন'}</span>
         </button>
       </div>
     </form>

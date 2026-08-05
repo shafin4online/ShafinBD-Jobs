@@ -135,18 +135,30 @@ export const AdminPanel: React.FC = () => {
   const currentAdminEmail = authUser?.email || profile?.email || 'shafinbd4u@gmail.com';
 
   const [jobForm, setJobForm] = useState({
+    postType: 'govt' as 'govt' | 'private' | 'exam-result' | 'university',
     title: '',
-    company: 'ShafinBD Tech',
-    companyLogo: 'https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=120&auto=format&fit=crop&q=80',
-    location: 'Dhaka (Hybrid)',
+    company: '',
+    companyLogo: '',
+    location: 'বাংলাদেশ (Bangladesh)',
     jobType: 'Full-time' as JobType,
     category: 'Govt. Job' as JobCategory,
-    salaryRange: '৳50,000 - ৳75,000 / month',
-    experienceLevel: 'Mid Level' as ExperienceLevel,
+    salaryRange: 'আলোচনা সাপেক্ষে',
+    experienceLevel: 'Entry Level' as ExperienceLevel,
     description: '',
-    requirementsText: '• 2+ years relevant experience\n• Strong communication skills',
-    responsibilitiesText: '• Execute daily tasks and deliverables',
-    deadline: '2026-09-15',
+    requirementsText: '',
+    responsibilitiesText: '',
+    deadline: '',
+    startDate: '',
+    position: '',
+    vacancies: '',
+    applicationFee: '',
+    applicationUrl: '',
+    circularUrl: '',
+    resultDate: '',
+    examDate: '',
+    passedCount: '',
+    writtenExamDate: '',
+    imageUrl: '',
     status: 'active' as 'active' | 'closed',
     featured: true,
   });
@@ -168,12 +180,10 @@ export const AdminPanel: React.FC = () => {
         setTimeout(() => {
           setJobForm((prev) => ({
             ...prev,
-            description: `${jobForm.title} পদের জন্য অভিজ্ঞ ও মেধা সম্পন্ন প্রার্থী আহ্বান করা হচ্ছে। বাংলাদেশে আকর্ষণীয় কর্মপরিবেশে কাজ করার সুযোগ রয়েছে।`,
-            requirementsText: `• ${jobForm.title} পদে ন্যূনতম বাস্তব অভিজ্ঞতা\n• সমস্যা সমাধানের দক্ষতা ও যোগাযোগে পারদর্শিতা\n• সংশ্লিষ্ট বিষয়ভিত্তিক শিক্ষাগত যোগ্যতা`,
-            responsibilitiesText: `• প্রধান কাজ ও প্রকল্প বাস্তবায়ন পরিচালনা করা\n• টিম লিডার ও কর্মকর্তাদের সাথে নিয়মিত কাজের সমন্বয় রাখা`,
+            description: `${jobForm.title} পোস্টের জন্য সার্কুলারের বিস্তারিত তথ্য নিচে প্রকাশ করা হলো। আগ্রহী প্রার্থীদের যথাসময়ে আবেদন করার আহ্বান জানানো হচ্ছে।`,
           }));
           setIsGeneratingAi(false);
-          setAiNotice('AI টেমপ্লেট থেকে সফলভাবে বর্ণনা জেনারেট হয়েছে!');
+          setAiNotice('AI টেমপ্লেট থেকে বিবরণ জেনারেট হয়েছে!');
         }, 600);
         return;
       }
@@ -181,7 +191,7 @@ export const AdminPanel: React.FC = () => {
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: `Create a professional job description in Bengali for "${jobForm.title}" in category "${jobForm.category}" in Bangladesh.`,
+        contents: `Create a professional description in Bengali for "${jobForm.title}" in category "${jobForm.category}" in Bangladesh.`,
       });
 
       const text = response.text || '';
@@ -201,69 +211,84 @@ export const AdminPanel: React.FC = () => {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const requirements = jobForm.requirementsText
+    const requirements = (jobForm.requirementsText || '')
       .split('\n')
       .map((s) => s.replace(/^[•\-\*]\s*/, '').trim())
       .filter(Boolean);
 
-    const responsibilities = jobForm.responsibilitiesText
+    const responsibilities = (jobForm.responsibilitiesText || '')
       .split('\n')
       .map((s) => s.replace(/^[•\-\*]\s*/, '').trim())
       .filter(Boolean);
+
+    const payload = {
+      title: jobForm.title,
+      company: jobForm.company || 'Shafin BD Jobs',
+      companyLogo: jobForm.imageUrl || jobForm.companyLogo || '',
+      location: jobForm.location || 'বাংলাদেশ',
+      jobType: jobForm.jobType || 'Full-time',
+      category: jobForm.category || 'Govt. Job',
+      salaryRange: jobForm.salaryRange || 'আলোচনা সাপেক্ষে',
+      experienceLevel: jobForm.experienceLevel || 'Entry Level',
+      description: jobForm.description || '',
+      requirements,
+      responsibilities,
+      deadline: jobForm.deadline || new Date().toISOString().split('T')[0],
+      status: jobForm.status || 'active',
+      featured: jobForm.featured,
+
+      // Extended Fields
+      postType: jobForm.postType || 'govt',
+      startDate: jobForm.startDate || '',
+      position: jobForm.position || '',
+      vacancies: jobForm.vacancies || '',
+      applicationFee: jobForm.applicationFee || '',
+      applicationUrl: jobForm.applicationUrl || '',
+      circularUrl: jobForm.circularUrl || '',
+      resultDate: jobForm.resultDate || '',
+      examDate: jobForm.examDate || '',
+      passedCount: jobForm.passedCount || '',
+      writtenExamDate: jobForm.writtenExamDate || '',
+      imageUrl: jobForm.imageUrl || '',
+    };
 
     if (editingJob) {
       updateJob({
         ...editingJob,
-        title: jobForm.title,
-        company: jobForm.company,
-        companyLogo: jobForm.companyLogo,
-        location: jobForm.location,
-        jobType: jobForm.jobType,
-        category: jobForm.category,
-        salaryRange: jobForm.salaryRange,
-        experienceLevel: jobForm.experienceLevel,
-        description: jobForm.description,
-        requirements,
-        responsibilities,
-        deadline: jobForm.deadline,
-        status: jobForm.status,
-        featured: jobForm.featured,
+        ...payload,
       });
-      setFormSuccess('সার্কুলার আপডেট সম্পন্ন হয়েছে!');
+      setFormSuccess('পোস্টের তথ্য সফলভাবে আপডেট করা হয়েছে!');
       setEditingJob(null);
     } else {
-      addJob({
-        title: jobForm.title,
-        company: jobForm.company,
-        companyLogo: jobForm.companyLogo,
-        location: jobForm.location,
-        jobType: jobForm.jobType,
-        category: jobForm.category,
-        salaryRange: jobForm.salaryRange,
-        experienceLevel: jobForm.experienceLevel,
-        description: jobForm.description,
-        requirements,
-        responsibilities,
-        deadline: jobForm.deadline,
-        status: jobForm.status,
-        featured: jobForm.featured,
-      });
-      setFormSuccess('নতুন সার্কুলার সফলভাবে লাইভ প্রকাশিত হয়েছে!');
+      addJob(payload);
+      setFormSuccess('নতুন পোস্ট সফলভাবে লাইভ প্রকাশিত হয়েছে!');
     }
 
     setJobForm({
+      postType: 'govt',
       title: '',
-      company: 'ShafinBD Tech',
-      companyLogo: 'https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=120&auto=format&fit=crop&q=80',
-      location: 'Dhaka (Hybrid)',
+      company: '',
+      companyLogo: '',
+      location: 'বাংলাদেশ (Bangladesh)',
       jobType: 'Full-time',
       category: 'Govt. Job',
-      salaryRange: '৳50,000 - ৳75,000 / month',
-      experienceLevel: 'Mid Level',
+      salaryRange: 'আলোচনা সাপেক্ষে',
+      experienceLevel: 'Entry Level',
       description: '',
-      requirementsText: '• 2+ years relevant experience\n• Strong communication skills',
-      responsibilitiesText: '• Execute daily tasks and deliverables',
-      deadline: '2026-09-15',
+      requirementsText: '',
+      responsibilitiesText: '',
+      deadline: '',
+      startDate: '',
+      position: '',
+      vacancies: '',
+      applicationFee: '',
+      applicationUrl: '',
+      circularUrl: '',
+      resultDate: '',
+      examDate: '',
+      passedCount: '',
+      writtenExamDate: '',
+      imageUrl: '',
       status: 'active',
       featured: true,
     });
@@ -274,20 +299,32 @@ export const AdminPanel: React.FC = () => {
   const startEditJob = (job: Job) => {
     setEditingJob(job);
     setJobForm({
-      title: job.title,
-      company: job.company,
+      postType: job.postType || (job.category === 'Private Job' ? 'private' : job.category === 'University Admission Notice' ? 'university' : 'govt'),
+      title: job.title || '',
+      company: job.company || '',
       companyLogo: job.companyLogo || '',
-      location: job.location,
-      jobType: job.jobType,
-      category: job.category,
-      salaryRange: job.salaryRange,
-      experienceLevel: job.experienceLevel,
-      description: job.description,
-      requirementsText: job.requirements.map((r) => `• ${r}`).join('\n'),
-      responsibilitiesText: job.responsibilities.map((r) => `• ${r}`).join('\n'),
-      deadline: job.deadline,
-      status: job.status,
-      featured: job.featured,
+      location: job.location || 'বাংলাদেশ',
+      jobType: job.jobType || 'Full-time',
+      category: job.category || 'Govt. Job',
+      salaryRange: job.salaryRange || '',
+      experienceLevel: job.experienceLevel || 'Entry Level',
+      description: job.description || '',
+      requirementsText: (job.requirements || []).map((r) => `• ${r}`).join('\n'),
+      responsibilitiesText: (job.responsibilities || []).map((r) => `• ${r}`).join('\n'),
+      deadline: job.deadline || '',
+      startDate: job.startDate || '',
+      position: job.position || '',
+      vacancies: job.vacancies || '',
+      applicationFee: job.applicationFee || '',
+      applicationUrl: job.applicationUrl || '',
+      circularUrl: job.circularUrl || '',
+      resultDate: job.resultDate || '',
+      examDate: job.examDate || '',
+      passedCount: job.passedCount || '',
+      writtenExamDate: job.writtenExamDate || '',
+      imageUrl: job.imageUrl || job.companyLogo || '',
+      status: job.status || 'active',
+      featured: job.featured ?? true,
     });
     setAdminSubTab('post');
   };

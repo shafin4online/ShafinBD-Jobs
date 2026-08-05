@@ -17,6 +17,8 @@ export type ExperienceLevel = 'Entry Level' | 'Mid Level' | 'Senior Level' | 'Ex
 
 export type ApplicationStatus = 'Pending' | 'Reviewing' | 'Shortlisted' | 'Rejected' | 'Hired';
 
+export type PostCategoryType = 'govt' | 'private' | 'exam-result' | 'university';
+
 export interface Job {
   id: string;
   title: string;
@@ -35,6 +37,20 @@ export interface Job {
   status: 'active' | 'closed';
   featured: boolean;
   applicantCount: number;
+
+  // Extended Post Fields based on Post Type
+  postType?: PostCategoryType;
+  startDate?: string;          // আবেদন শুরু
+  position?: string;           // পদের নাম
+  vacancies?: string;          // পdes সংখ্যা
+  applicationFee?: string;     // আবেদন ফি
+  applicationUrl?: string;     // আবেদনের লিংক
+  circularUrl?: string;        // সম্পূর্ণ নিয়োগ বিজ্ঞপ্তি লিংক / রেজাল্ট লিংক
+  resultDate?: string;         // প্রকাশের তারিখ
+  examDate?: string;           // পরীক্ষার তারিখ
+  passedCount?: string;        // উত্তীর্ণ সংখ্যা
+  writtenExamDate?: string;    // লিখিত পরীক্ষার তারিখ
+  imageUrl?: string;           // Base64 Image
 }
 
 export interface UserProfile {

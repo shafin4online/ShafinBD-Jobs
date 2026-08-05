@@ -93,21 +93,107 @@ export const JobDetailsModal: React.FC = () => {
         {/* Modal Scrollable Body */}
         <div className="p-5 sm:p-6 overflow-y-auto space-y-6 text-slate-800">
 
+          {/* Display Base64 Image if available */}
+          {job.imageUrl && (
+            <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 p-2 shadow-xs">
+              <img
+                src={job.imageUrl}
+                alt={job.title}
+                className="w-full max-h-80 object-contain rounded-xl bg-white"
+              />
+              <p className="text-[10px] text-center text-slate-400 font-bold mt-1.5">অফিসিয়াল নিয়োগ বা ফলাফল বিজ্ঞপ্তি</p>
+            </div>
+          )}
+
           {/* Quick Metrics Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs font-semibold">
-            <div>
-              <span className="text-slate-400 block text-[10px] uppercase font-bold">Offered Salary</span>
-              <span className="text-slate-900 text-sm font-extrabold text-emerald-700">{job.salaryRange}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 block text-[10px] uppercase font-bold">Experience Level</span>
-              <span className="text-slate-800 text-sm">{job.experienceLevel}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 block text-[10px] uppercase font-bold">Application Deadline</span>
-              <span className="text-rose-600 text-sm font-bold">{job.deadline}</span>
-            </div>
+            {job.position && (
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">পদের নাম</span>
+                <span className="text-slate-900 text-xs font-extrabold">{job.position}</span>
+              </div>
+            )}
+            {job.vacancies && (
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">পদের সংখ্যা</span>
+                <span className="text-emerald-700 text-xs font-extrabold">{job.vacancies}</span>
+              </div>
+            )}
+            {job.applicationFee && (
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">আবেদন ফি</span>
+                <span className="text-slate-800 text-xs font-bold">{job.applicationFee}</span>
+              </div>
+            )}
+            {job.startDate && (
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">আবেদন শুরু</span>
+                <span className="text-slate-800 text-xs font-bold">{job.startDate}</span>
+              </div>
+            )}
+            {job.deadline && (
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">আবেদনের শেষ তারিখ</span>
+                <span className="text-rose-600 text-xs font-bold">{job.deadline}</span>
+              </div>
+            )}
+            {job.resultDate && (
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">প্রকাশের তারিখ</span>
+                <span className="text-emerald-700 text-xs font-bold">{job.resultDate}</span>
+              </div>
+            )}
+            {job.examDate && (
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">পরীক্ষার তারিখ</span>
+                <span className="text-slate-800 text-xs font-bold">{job.examDate}</span>
+              </div>
+            )}
+            {job.passedCount && (
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">উত্তীর্ণ সংখ্যা</span>
+                <span className="text-emerald-700 text-xs font-bold">{job.passedCount}</span>
+              </div>
+            )}
+            {job.writtenExamDate && (
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">লিখিত পরীক্ষার তারিখ</span>
+                <span className="text-slate-800 text-xs font-bold">{job.writtenExamDate}</span>
+              </div>
+            )}
+            {job.salaryRange && (
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">বেতন / স্কেল</span>
+                <span className="text-slate-900 text-xs font-extrabold text-emerald-700">{job.salaryRange}</span>
+              </div>
+            )}
           </div>
+
+          {/* Action Links Buttons (Application Link & Full Circular Link) */}
+          {(job.applicationUrl || job.circularUrl) && (
+            <div className="flex flex-wrap gap-2.5 p-3.5 bg-emerald-50/60 rounded-2xl border border-emerald-200">
+              {job.applicationUrl && (
+                <a
+                  href={job.applicationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>অনলাইনে আবেদন করুন (Apply Online)</span>
+                </a>
+              )}
+              {job.circularUrl && (
+                <a
+                  href={job.circularUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>সম্পূর্ণ নিয়োগ বিজ্ঞপ্তি / রেজাল্ট দেখুন</span>
+                </a>
+              )}
+            </div>
+          )}
 
           {/* Overview Description */}
           <div>
