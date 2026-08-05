@@ -14,7 +14,7 @@ import { AccountActivationModal } from './components/AccountActivationModal';
 import { Footer } from './components/Footer';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { NotificationPermissionModal } from './components/NotificationPermissionModal';
-import { Briefcase, Sparkles, AlertCircle, RotateCcw, Filter, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Briefcase, Sparkles, AlertCircle, RotateCcw, Filter, ChevronDown, ChevronUp, Loader2, X } from 'lucide-react';
 import { t } from './translations';
 
 const MainContent: React.FC = () => {
@@ -32,6 +32,7 @@ const MainContent: React.FC = () => {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filterCollapsed, setFilterCollapsed] = useState(true);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Infinite Scroll State
   const [visibleCount, setVisibleCount] = useState(6);
@@ -41,9 +42,9 @@ const MainContent: React.FC = () => {
   // Filter logic
   const filteredJobs = jobs.filter((job) => {
     // Specific Nav Tab filtering
-    if (activeTab === 'govt-jobs' && job.category !== 'Govt. Job') return false;
-    if (activeTab === 'private-jobs' && job.category !== 'Private Job') return false;
-    if (activeTab === 'university-admission' && job.category !== 'University Admission Notice') return false;
+    if (activeTab === 'govt-jobs' && !job.category.toLowerCase().includes('govt')) return false;
+    if (activeTab === 'private-jobs' && !job.category.toLowerCase().includes('private')) return false;
+    if (activeTab === 'university-admission' && !job.category.toLowerCase().includes('university') && !job.category.toLowerCase().includes('admission')) return false;
 
     // Search keyword
     if (filters.searchKeyword) {
@@ -127,15 +128,18 @@ const MainContent: React.FC = () => {
 
       {/* Main Content Wrapper - Padded on desktop for fixed sidebar */}
       <div className="flex-1 lg:pl-64 sm:lg:pl-72 flex flex-col min-h-screen">
-        <TopHeader onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
+        <TopHeader 
+          onToggleSidebar={() => setSidebarOpen((prev) => !prev)} 
+          onOpenMobileFilter={() => setIsMobileFilterOpen(true)}
+        />
 
         <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-6">
           
           {/* JOBS BOARD / SPECIFIC CATEGORIES */}
           {['jobs', 'govt-jobs', 'private-jobs', 'university-admission'].includes(activeTab) && (
             <div className="space-y-6">
-              {/* Collapsible Search & Filter Bar for Large Screens */}
-              <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
+              {/* Collapsible Search & Filter Bar for Large Screens (Hidden on Mobile View) */}
+              <div className="hidden md:block bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4 text-emerald-600" />
@@ -158,8 +162,8 @@ const MainContent: React.FC = () => {
 
               {/* Job List Content */}
               <div className="space-y-6">
-                {/* Header Count Bar */}
-                <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                {/* Header Count Bar (Hidden on Mobile View) */}
+                <div className="hidden md:flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
                   <div>
                     <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                       <Briefcase className="w-4 h-4 text-emerald-600" />
@@ -279,6 +283,39 @@ const MainContent: React.FC = () => {
       <AccountActivationModal isOpen={showActivationModal} onClose={() => setShowActivationModal(false)} />
       <PWAInstallPrompt />
       <NotificationPermissionModal />
+
+      {/* Mobile Filter Sheet Modal */}
+      {isMobileFilterOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/65 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+              <div className="flex items-center gap-2 font-extrabold text-slate-900 dark:text-slate-100 text-sm">
+                <Filter className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>ফিল্টার ও সার্চ অপশন (Job Search Filters)</span>
+              </div>
+              <button
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 overflow-y-auto flex-1">
+              <JobFilter />
+            </div>
+
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+              <button
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-md transition-colors cursor-pointer"
+              >
+                ফিল্টার প্রয়োগ করুন (Apply Filters)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

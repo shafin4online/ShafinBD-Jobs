@@ -1,30 +1,38 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useJobContext } from '../context/JobContext';
-import { Menu, Search, Bookmark, Globe, User, LogOut, Settings, Sun, Moon, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { useJobContext, ADMIN_EMAILS } from '../context/JobContext';
+import { Menu, Search, Bookmark, Globe, User, LogOut, Settings, Sun, Moon, ChevronDown, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { t } from '../translations';
 import { APP_LOGO_URL } from '../constants';
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
+  onOpenMobileFilter?: () => void;
 }
 
-export const TopHeader: React.FC<TopHeaderProps> = ({ onToggleSidebar }) => {
+export const TopHeader: React.FC<TopHeaderProps> = ({ onToggleSidebar, onOpenMobileFilter }) => {
   const { 
     authUser, 
     profile, 
     filters, 
     setFilters, 
     setShowAuthModal, 
+    activeTab,
     setActiveTab,
     logoutUser,
     isDarkMode,
     toggleDarkMode,
     lang,
-    setLang
+    setLang,
+    isAdminLoggedIn,
+    role
   } = useJobContext();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const userEmail = (authUser?.email || profile?.email || '').trim().toLowerCase();
+  const isEmailAdmin = ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === userEmail);
+  const isUserAdmin = isAdminLoggedIn || role === 'admin' || isEmailAdmin;
 
   const savedJobsCount = profile?.savedJobs?.length || 0;
 
@@ -220,6 +228,53 @@ export const TopHeader: React.FC<TopHeaderProps> = ({ onToggleSidebar }) => {
             </button>
           )}
 
+        </div>
+      </div>
+
+      {/* Fixed Mobile & PWA Quick Nav Strip */}
+      <div className="lg:hidden border-t border-slate-300 dark:border-slate-800 bg-slate-400 dark:bg-slate-800 shadow-xs">
+        <div className="grid grid-cols-4 gap-px bg-slate-400 dark:bg-slate-700">
+          <button
+            onClick={() => setActiveTab('govt-jobs')}
+            className={`py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight transition-all cursor-pointer flex items-center justify-center leading-tight select-none ${
+              activeTab === 'govt-jobs'
+                ? 'bg-[#6093cd] text-slate-950 font-black shadow-inner border-b-2 border-slate-900 dark:border-slate-100'
+                : 'bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700'
+            }`}
+          >
+            <span>সরকারি চাকুরী</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('private-jobs')}
+            className={`py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight transition-all cursor-pointer flex items-center justify-center leading-tight select-none ${
+              activeTab === 'private-jobs'
+                ? 'bg-[#6093cd] text-slate-950 font-black shadow-inner border-b-2 border-slate-900 dark:border-slate-100'
+                : 'bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700'
+            }`}
+          >
+            <span>বেসরকারি চাকুরী</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('exam-results')}
+            className={`py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight transition-all cursor-pointer flex items-center justify-center leading-tight select-none ${
+              activeTab === 'exam-results'
+                ? 'bg-[#6093cd] text-slate-950 font-black shadow-inner border-b-2 border-slate-900 dark:border-slate-100'
+                : 'bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700'
+            }`}
+          >
+            <span>ফলাফল</span>
+          </button>
+
+          <button
+            onClick={() => {
+              if (onOpenMobileFilter) onOpenMobileFilter();
+            }}
+            className="py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700 transition-all cursor-pointer flex items-center justify-center leading-tight select-none"
+          >
+            <span>ফিল্টার করুন</span>
+          </button>
         </div>
       </div>
     </header>

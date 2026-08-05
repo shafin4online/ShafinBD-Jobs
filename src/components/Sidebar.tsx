@@ -1,5 +1,5 @@
 import React from 'react';
-import { useJobContext } from '../context/JobContext';
+import { useJobContext, ADMIN_EMAILS } from '../context/JobContext';
 import { ActiveTab } from '../types';
 import { t, TranslationKey } from '../translations';
 import { APP_LOGO_URL } from '../constants';
@@ -18,7 +18,8 @@ import {
   X,
   User as UserIcon,
   CheckCircle2,
-  Award
+  Award,
+  ShieldCheck
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -34,8 +35,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     profile, 
     logoutUser,
     setShowAuthModal,
-    lang
+    lang,
+    isAdminLoggedIn,
+    role
   } = useJobContext();
+
+  const userEmail = (authUser?.email || profile?.email || '').trim().toLowerCase();
+  const isEmailAdmin = ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === userEmail);
+  const isUserAdmin = isAdminLoggedIn || role === 'admin' || isEmailAdmin;
 
   const handleTabClick = (tab: ActiveTab) => {
     setActiveTab(tab);
@@ -113,6 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
               {t('mainNav', lang)}
             </div>
+
             {candidateNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;

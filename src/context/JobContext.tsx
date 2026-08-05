@@ -249,15 +249,21 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const checkAndSetAdmin = (email?: string | null) => {
     if (!email) return false;
-    const isTargetAdmin = ADMIN_EMAILS.some((e) => e.toLowerCase() === email.toLowerCase());
+    const cleanEmail = email.trim().toLowerCase();
+    const isTargetAdmin = ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === cleanEmail);
     if (isTargetAdmin) {
       setRoleState('admin');
       setIsAdminLoggedIn(true);
       localStorage.setItem(LOCAL_STORAGE_KEYS.ROLE, 'admin');
       localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH, 'true');
       return true;
+    } else {
+      setRoleState('jobseeker');
+      setIsAdminLoggedIn(false);
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ROLE, 'jobseeker');
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH, 'false');
+      return false;
     }
-    return false;
   };
 
   useEffect(() => {
@@ -274,12 +280,19 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const currentEmail = authUser?.email || profile?.email;
     if (currentEmail) {
-      const isTargetAdmin = ADMIN_EMAILS.some((e) => e.toLowerCase() === currentEmail.toLowerCase());
+      const cleanEmail = currentEmail.trim().toLowerCase();
+      const isTargetAdmin = ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === cleanEmail);
       if (isTargetAdmin) {
         setRoleState('admin');
         setIsAdminLoggedIn(true);
         localStorage.setItem(LOCAL_STORAGE_KEYS.ROLE, 'admin');
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH, 'true');
+        setActiveTab('admin');
+      } else {
+        setRoleState('jobseeker');
+        setIsAdminLoggedIn(false);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ROLE, 'jobseeker');
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH, 'false');
       }
     }
   }, [authUser?.email, profile?.email]);
@@ -294,7 +307,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setProfile((prev) => ({ ...updatedProf, ...prev, id: currentUser.uid }));
         saveProfileToFirestore({ ...updatedProf, id: currentUser.uid });
         if (currentUser.email) {
-          checkAndSetAdmin(currentUser.email);
+          const isAdmin = checkAndSetAdmin(currentUser.email);
+          if (isAdmin) {
+            setActiveTab('admin');
+          }
         }
       }
     });
@@ -324,7 +340,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const unsubProfile = subscribeToProfile(authUser.uid, (loaded) => {
       if (loaded) {
         setProfile(loaded);
-        if (loaded.email) checkAndSetAdmin(loaded.email);
+        if (loaded.email) {
+          const isAdmin = checkAndSetAdmin(loaded.email);
+          if (isAdmin) setActiveTab('admin');
+        }
       }
     }, () => {});
     return () => unsubProfile();
@@ -336,15 +355,18 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsAuthLoading(true); setAuthError(null);
       const res = await signInWithPopup(auth, googleProvider);
       if (res.user) {
-        if (res.user.email) {
-          checkAndSetAdmin(res.user.email);
-        }
-        const currentPhone = profile.phone || res.user.phoneNumber || '';
-        const currentName = profile.fullName || res.user.displayName || '';
-        if (!currentPhone || !currentName || !profile.isAccountActive) {
-          setShowActivationModal(true);
+        const userEmail = res.user.email || '';
+        const isAdmin = checkAndSetAdmin(userEmail);
+        if (isAdmin) {
+          setActiveTab('admin');
         } else {
-          setActiveTab('profile');
+          const currentPhone = profile.phone || res.user.phoneNumber || '';
+          const currentName = profile.fullName || res.user.displayName || '';
+          if (!currentPhone || !currentName || !profile.isAccountActive) {
+            setShowActivationModal(true);
+          } else {
+            setActiveTab('profile');
+          }
         }
       }
     } catch (error: any) {
@@ -356,10 +378,12 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       setIsAuthLoading(true); setAuthError(null);
       const res = await signInWithEmailAndPassword(auth, email, pass);
-      if (res.user?.email) {
-        checkAndSetAdmin(res.user.email);
+      const targetEmail = res.user?.email || email;
+      const isAdmin = checkAndSetAdmin(targetEmail);
+      if (isAdmin) {
+        setActiveTab('admin');
       } else {
-        checkAndSetAdmin(email);
+        setActiveTab('profile');
       }
     } catch (error: any) { setAuthError(error); throw error; }
     finally { setIsAuthLoading(false); }
@@ -372,7 +396,12 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const newProf = createGoogleProfile(userCred.user, '', '');
       newProf.fullName = name || email.split('@')[0];
       setProfile(newProf); saveProfileToFirestore(newProf);
-      checkAndSetAdmin(email);
+      const isAdmin = checkAndSetAdmin(email);
+      if (isAdmin) {
+        setActiveTab('admin');
+      } else {
+        setActiveTab('profile');
+      }
     } catch (error: any) { setAuthError(error); throw error; }
     finally { setIsAuthLoading(false); }
   };
@@ -394,12 +423,26 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       savedJobs: [],
     };
     setProfile(newProf); saveProfileToFirestore(newProf);
-    checkAndSetAdmin(email);
+    const isAdmin = checkAndSetAdmin(email);
+    if (isAdmin) {
+      setActiveTab('admin');
+    } else {
+      setActiveTab('profile');
+    }
   };
 
   const logoutUser = async () => {
-    try { await signOut(auth); setProfile(INITIAL_PROFILE); }
-    catch (e) { console.error(e); }
+    try {
+      await signOut(auth);
+      setProfile(INITIAL_PROFILE);
+      setRoleState('jobseeker');
+      setIsAdminLoggedIn(false);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ROLE);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH);
+      setActiveTab('jobs');
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   // Actions

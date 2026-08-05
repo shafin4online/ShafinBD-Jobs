@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useJobContext } from '../context/JobContext';
+import { useJobContext, ADMIN_EMAILS } from '../context/JobContext';
 import { Job, JobType, JobCategory, ExperienceLevel } from '../types';
 import { GoogleGenAI } from '@google/genai';
 import { 
@@ -47,7 +47,11 @@ export const AdminPanel: React.FC = () => {
   const [passcode, setPasscode] = useState('');
   const [passError, setPassError] = useState('');
 
-  if (!isAdminLoggedIn) {
+  const currentUserEmail = (authUser?.email || profile?.email || '').trim().toLowerCase();
+  const isEmailAdmin = ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === currentUserEmail);
+  const isAuthorizedAdmin = isAdminLoggedIn || isEmailAdmin;
+
+  if (!isAuthorizedAdmin) {
     const handlePasscodeLogin = (e: React.FormEvent) => {
       e.preventDefault();
       const success = loginAdmin(passcode);

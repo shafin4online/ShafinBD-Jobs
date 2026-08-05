@@ -10,6 +10,16 @@ export const NotificationPermissionModal: React.FC = () => {
   const [isDenied, setIsDenied] = useState(false);
 
   useEffect(() => {
+    // Check if app is running in PWA / standalone mode
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                  (window.navigator as any).standalone === true ||
+                  document.referrer.includes('android-app://');
+
+    if (!isPWA) {
+      // Do not show notification prompt in regular web browser
+      return;
+    }
+
     // Check current notification permission status
     const currentPermission = getNotificationPermission();
 
