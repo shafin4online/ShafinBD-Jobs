@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { JobProvider, useJobContext } from './context/JobContext';
+import { JobProvider, useJobContext, ADMIN_EMAILS } from './context/JobContext';
 import { Sidebar } from './components/Sidebar';
+import { AdminSidebar } from './components/AdminSidebar';
 import { TopHeader } from './components/TopHeader';
 import { JobCard } from './components/JobCard';
 import { JobFilter } from './components/JobFilter';
@@ -14,7 +15,7 @@ import { AccountActivationModal } from './components/AccountActivationModal';
 import { Footer } from './components/Footer';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { NotificationPermissionModal } from './components/NotificationPermissionModal';
-import { Briefcase, Sparkles, AlertCircle, RotateCcw, Filter, ChevronDown, ChevronUp, Loader2, X } from 'lucide-react';
+import { Briefcase, Sparkles, AlertCircle, RotateCcw, Filter, ChevronDown, ChevronUp, Loader2, X, UserCheck, User as UserIcon, FileText } from 'lucide-react';
 import { t } from './translations';
 
 const MainContent: React.FC = () => {
@@ -27,8 +28,12 @@ const MainContent: React.FC = () => {
     setShowAuthModal,
     showActivationModal,
     setShowActivationModal,
-    lang
+    lang,
+    authUser
   } = useJobContext();
+
+  const userEmail = authUser?.email ? authUser.email.trim().toLowerCase() : '';
+  const isUserAdmin = !!userEmail && ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === userEmail);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filterCollapsed, setFilterCollapsed] = useState(true);
@@ -124,7 +129,11 @@ const MainContent: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-100/70 text-slate-800 flex flex-col">
       {/* Fixed Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {isUserAdmin && activeTab === 'admin' ? (
+        <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      ) : (
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      )}
 
       {/* Main Content Wrapper - Padded on desktop for fixed sidebar */}
       <div className="flex-1 lg:pl-64 sm:lg:pl-72 flex flex-col min-h-screen">
@@ -260,10 +269,52 @@ const MainContent: React.FC = () => {
           {activeTab === 'exam-results' && <ExamResultsPage />}
 
           {/* TAB: CANDIDATE PROFILE */}
-          {activeTab === 'profile' && <UserProfile />}
+          {activeTab === 'profile' && (
+            authUser ? (
+              <UserProfile />
+            ) : (
+              <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border border-slate-200 shadow-xs space-y-4 max-w-md mx-auto my-8">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
+                  <UserCheck className="w-8 h-8" />
+                </div>
+                <h3 className="text-base font-extrabold text-slate-800">লগইন প্রয়োজন (Login Required)</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  প্রার্থী প্রোফাইল দেখতে বা তৈরি করতে অনুগ্রহ করে সাইন ইন অথবা নতুন একাউন্ট রেজিস্ট্রেশন করুন।
+                </p>
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-colors cursor-pointer inline-flex items-center gap-2"
+                >
+                  <UserIcon className="w-4 h-4" />
+                  <span>সাইন ইন / রেজিস্ট্রেশন করুন</span>
+                </button>
+              </div>
+            )
+          )}
 
           {/* TAB: APPLICATIONS */}
-          {activeTab === 'applications' && <UserProfile />}
+          {activeTab === 'applications' && (
+            authUser ? (
+              <UserProfile />
+            ) : (
+              <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border border-slate-200 shadow-xs space-y-4 max-w-md mx-auto my-8">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
+                  <FileText className="w-8 h-8" />
+                </div>
+                <h3 className="text-base font-extrabold text-slate-800">লগইন প্রয়োজন (Login Required)</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  আপনার আবেদনের তালিকা ও বিবরণ দেখতে অনুগ্রহ করে সাইন ইন করুন।
+                </p>
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-colors cursor-pointer inline-flex items-center gap-2"
+                >
+                  <UserIcon className="w-4 h-4" />
+                  <span>সাইন ইন / রেজিস্ট্রেশন করুন</span>
+                </button>
+              </div>
+            )
+          )}
 
           {/* TAB: ADMIN PANEL */}
           {activeTab === 'admin' && <AdminPanel />}

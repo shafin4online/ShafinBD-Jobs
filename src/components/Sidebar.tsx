@@ -1,5 +1,5 @@
 import React from 'react';
-import { useJobContext, ADMIN_EMAILS } from '../context/JobContext';
+import { useJobContext } from '../context/JobContext';
 import { ActiveTab } from '../types';
 import { t, TranslationKey } from '../translations';
 import { APP_LOGO_URL } from '../constants';
@@ -17,9 +17,7 @@ import {
   LogOut,
   X,
   User as UserIcon,
-  CheckCircle2,
-  Award,
-  ShieldCheck
+  Award
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -35,16 +33,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     profile, 
     logoutUser,
     setShowAuthModal,
-    lang,
-    isAdminLoggedIn,
-    role
+    lang
   } = useJobContext();
 
-  const userEmail = (authUser?.email || profile?.email || '').trim().toLowerCase();
-  const isEmailAdmin = ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === userEmail);
-  const isUserAdmin = isAdminLoggedIn || role === 'admin' || isEmailAdmin;
-
   const handleTabClick = (tab: ActiveTab) => {
+    if ((tab === 'profile' || tab === 'applications') && !authUser) {
+      setShowAuthModal(true);
+      onClose();
+      return;
+    }
     setActiveTab(tab);
     onClose();
   };
@@ -115,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-xs">
           
-          {/* SECTION: User Navigation Mode */}
+          {/* SECTION: User / Candidate Navigation */}
           <div className="space-y-1">
             <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
               {t('mainNav', lang)}
@@ -188,31 +185,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 )}
                 <div className="overflow-hidden">
                   <p className="text-xs font-bold text-white truncate">{profile?.fullName || authUser.displayName || 'User'}</p>
-                  <p className="text-[10px] text-emerald-400 font-medium truncate flex items-center gap-1">
-                    <CheckCircle2 className="w-2.5 h-2.5" />
-                    <span>{t('activeLogin', lang)}</span>
-                  </p>
+                  <p className="text-[10px] text-slate-400 truncate">{authUser.email}</p>
                 </div>
               </div>
-
               <button
                 onClick={logoutUser}
-                title={t('signOut', lang)}
-                className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0 cursor-pointer"
+                title="লগআউট"
+                className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (
             <button
-              onClick={() => {
-                setShowAuthModal(true);
-                onClose();
-              }}
-              className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              onClick={() => { setShowAuthModal(true); onClose(); }}
+              className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               <UserIcon className="w-4 h-4" />
-              <span>{t('signInRegister', lang)}</span>
+              <span>সাইন ইন / রেজিস্ট্রেশন</span>
             </button>
           )}
         </div>

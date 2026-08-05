@@ -30,9 +30,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({ onToggleSidebar, onOpenMob
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const userEmail = (authUser?.email || profile?.email || '').trim().toLowerCase();
-  const isEmailAdmin = ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === userEmail);
-  const isUserAdmin = isAdminLoggedIn || role === 'admin' || isEmailAdmin;
+  const userEmail = authUser?.email ? authUser.email.trim().toLowerCase() : '';
+  const isUserAdmin = !!userEmail && ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === userEmail);
 
   const savedJobsCount = profile?.savedJobs?.length || 0;
 
@@ -161,6 +160,25 @@ export const TopHeader: React.FC<TopHeaderProps> = ({ onToggleSidebar, onOpenMob
 
                   {/* Menu Links */}
                   <div className="p-1.5 space-y-1 text-xs font-semibold">
+                    {/* Admin Dashboard Link for Authorized Admins */}
+                    {isUserAdmin && (
+                      <button
+                        onClick={() => {
+                          setActiveTab('admin');
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-amber-900 dark:text-amber-200 bg-amber-500/15 hover:bg-amber-500/25 transition-colors cursor-pointer border border-amber-500/30 font-extrabold"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <ShieldCheck className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                          <span>এডমিন প্যানেল (Admin Panel)</span>
+                        </div>
+                        <span className="text-[9px] px-1.5 py-0.5 bg-amber-500 text-slate-950 font-black rounded">
+                          ADMIN
+                        </span>
+                      </button>
+                    )}
+
                     {/* User Profile Link */}
                     <button
                       onClick={() => {

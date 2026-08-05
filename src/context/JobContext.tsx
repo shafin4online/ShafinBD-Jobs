@@ -278,24 +278,27 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Check admin whenever user email changes
   useEffect(() => {
-    const currentEmail = authUser?.email || profile?.email;
-    if (currentEmail) {
-      const cleanEmail = currentEmail.trim().toLowerCase();
+    if (authUser?.email) {
+      const cleanEmail = authUser.email.trim().toLowerCase();
       const isTargetAdmin = ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === cleanEmail);
       if (isTargetAdmin) {
         setRoleState('admin');
         setIsAdminLoggedIn(true);
         localStorage.setItem(LOCAL_STORAGE_KEYS.ROLE, 'admin');
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH, 'true');
-        setActiveTab('admin');
       } else {
         setRoleState('jobseeker');
         setIsAdminLoggedIn(false);
         localStorage.setItem(LOCAL_STORAGE_KEYS.ROLE, 'jobseeker');
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH, 'false');
       }
+    } else {
+      setRoleState('jobseeker');
+      setIsAdminLoggedIn(false);
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ROLE, 'jobseeker');
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_AUTH, 'false');
     }
-  }, [authUser?.email, profile?.email]);
+  }, [authUser?.email]);
 
   // Observer
   useEffect(() => {
