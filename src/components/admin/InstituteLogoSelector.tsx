@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Building2, Upload, Search, Check, Trash2, Plus, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Building2, Upload, Search, Check, Trash2, Sparkles, Image as ImageIcon, X, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useJobContext } from '../../context/JobContext';
 
 export interface SavedInstituteLogo {
@@ -62,6 +62,7 @@ const DEFAULT_INSTITUTE_LOGOS: SavedInstituteLogo[] = [
 ];
 
 const LOCAL_STORAGE_LOGOS_KEY = 'SAVED_INSTITUTE_LOGOS_GALLERY';
+const DELETED_LOGOS_KEY = 'DELETED_INSTITUTE_LOGOS_GALLERY_IDS';
 
 interface InstituteLogoSelectorProps {
   jobForm: any;
@@ -77,15 +78,30 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
 
   const [savedLogos, setSavedLogos] = useState<SavedInstituteLogo[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isUploading, setIsUploading] = useState(false);
-  const [showGalleryModal, setShowGalleryModal] = useState(false);
+
+  // Modal states
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [pendingLogoUrl, setPendingLogoUrl] = useState<string | null>(null);
+  const [uploadInstituteName, setUploadInstituteName] = useState('');
+  const [logoToDelete, setLogoToDelete] = useState<SavedInstituteLogo | null>(null);
+
+  // Helper to read deleted logo IDs/Names from localStorage
+  const getDeletedKeys = (): string[] => {
+    try {
+      const stored = localStorage.getItem(DELETED_LOGOS_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  };
 
   // Load saved logos from LocalStorage & jobs on mount
   useEffect(() => {
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_LOGOS_KEY);
       let localList: SavedInstituteLogo[] = stored ? JSON.parse(stored) : [];
+      const deletedKeys = new Set(getDeletedKeys().map((k) => k.toLowerCase()));
 
       // Extract logos from existing jobs
       const jobLogosMap = new Map<string, SavedInstituteLogo>();
@@ -103,17 +119,28 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
         }
       });
 
-      // Combine defaults + custom saved + job extracted logos
+      // Combine defaults + custom saved + job extracted logos (excluding deleted)
       const combinedMap = new Map<string, SavedInstituteLogo>();
+      
       DEFAULT_INSTITUTE_LOGOS.forEach((item) => {
-        combinedMap.set(item.name.trim().toLowerCase(), item);
+        const normName = item.name.trim().toLowerCase();
+        if (!deletedKeys.has(item.id.toLowerCase()) && !deletedKeys.has(normName)) {
+          combinedMap.set(normName, item);
+        }
       });
-      jobLogosMap.forEach((item, key) => {
-        if (!combinedMap.has(key)) combinedMap.set(key, item);
+
+      jobLogosMap.forEach((item, normName) => {
+        if (!deletedKeys.has(item.id.toLowerCase()) && !deletedKeys.has(normName)) {
+          if (!combinedMap.has(normName)) combinedMap.set(normName, item);
+        }
       });
+
       localList.forEach((item) => {
         if (item.name && item.logoUrl) {
-          combinedMap.set(item.name.trim().toLowerCase(), item);
+          const normName = item.name.trim().toLowerCase();
+          if (!deletedKeys.has(item.id.toLowerCase()) && !deletedKeys.has(normName)) {
+            combinedMap.set(normName, item);
+          }
         }
       });
 
@@ -144,8 +171,8 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
     });
   };
 
-  // Upload new logo handler
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload new logo file handler -> opens beautiful custom popup modal
+  const handleLogoFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 3 * 1024 * 1024) {
@@ -156,19 +183,37 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = reader.result as string;
-        const instituteName = jobForm.company?.trim() || prompt('প্রতিষ্ঠানের নাম দিন (যেমন: বাংলাদেশ ব্যাংক):') || 'নতুন প্রতিষ্ঠান';
-
-        setJobForm((prev: any) => ({
-          ...prev,
-          companyLogo: base64,
-          company: prev.company || instituteName,
-        }));
-
-        saveCustomLogo(instituteName, base64);
+        setPendingLogoUrl(base64);
+        setUploadInstituteName(jobForm.company?.trim() || '');
+        setShowUploadModal(true);
         setIsUploading(false);
       };
       reader.readAsDataURL(file);
     }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Handle save from upload modal
+  const handleSaveUploadedLogo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pendingLogoUrl || !uploadInstituteName.trim()) return;
+
+    const name = uploadInstituteName.trim();
+    const logoUrl = pendingLogoUrl;
+
+    setJobForm((prev: any) => ({
+      ...prev,
+      companyLogo: logoUrl,
+      company: prev.company ? prev.company : name,
+    }));
+
+    saveCustomLogo(name, logoUrl);
+
+    setShowUploadModal(false);
+    setPendingLogoUrl(null);
+    setUploadInstituteName('');
   };
 
   // Select logo from gallery
@@ -176,37 +221,71 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
     setJobForm((prev: any) => ({
       ...prev,
       companyLogo: item.logoUrl,
-      // Auto fill company name if empty or if requested
       company: prev.company ? prev.company : item.name,
     }));
   };
 
-  // Remove logo from gallery
-  const handleDeleteCustomLogo = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm('এই সেভ করা লোগোটি তালিকা থেকে মুছে ফেলতে চান?')) {
-      setSavedLogos((prev) => {
-        const filtered = prev.filter((item) => item.id !== id);
-        try {
-          localStorage.setItem(LOCAL_STORAGE_LOGOS_KEY, JSON.stringify(filtered));
-        } catch (err) {
-          console.error(err);
-        }
-        return filtered;
-      });
+  // Permanently delete logo handler
+  const handleConfirmPermanentDelete = () => {
+    if (!logoToDelete) return;
+
+    const item = logoToDelete;
+    const normName = item.name.trim().toLowerCase();
+
+    // Store in deleted keys list in localStorage
+    try {
+      const deletedKeys = getDeletedKeys();
+      const updatedDeleted = Array.from(new Set([...deletedKeys, item.id.toLowerCase(), normName]));
+      localStorage.setItem(DELETED_LOGOS_KEY, JSON.stringify(updatedDeleted));
+    } catch (err) {
+      console.error('Failed to update deleted keys:', err);
+    }
+
+    // Update custom saved logos list in localStorage
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_LOGOS_KEY);
+      if (stored) {
+        const list: SavedInstituteLogo[] = JSON.parse(stored);
+        const filtered = list.filter((l) => l.id !== item.id && l.name.trim().toLowerCase() !== normName);
+        localStorage.setItem(LOCAL_STORAGE_LOGOS_KEY, JSON.stringify(filtered));
+      }
+    } catch (err) {
+      console.error('Failed to remove custom logo from localStorage:', err);
+    }
+
+    // Remove from state
+    setSavedLogos((prev) => prev.filter((l) => l.id !== item.id && l.name.trim().toLowerCase() !== normName));
+
+    // Clear from current form if selected
+    if (jobForm.companyLogo === item.logoUrl) {
+      setJobForm((prev: any) => ({ ...prev, companyLogo: '' }));
+    }
+
+    setLogoToDelete(null);
+  };
+
+  // Reset logo gallery to defaults
+  const handleResetGallery = () => {
+    if (window.confirm('গ্যালারি রিসেট করলে ডিফল্ট সব ইন্সটিটিউট লোগো পুনরায় যুক্ত হবে। আপনি কি রিসেট করতে চান?')) {
+      try {
+        localStorage.removeItem(DELETED_LOGOS_KEY);
+        localStorage.removeItem(LOCAL_STORAGE_LOGOS_KEY);
+      } catch (e) {
+        console.error(e);
+      }
+      setSavedLogos(DEFAULT_INSTITUTE_LOGOS);
     }
   };
 
   // Filter logos for search
   const filteredLogos = savedLogos.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
+    return item.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   const selectedLogoUrl = jobForm.companyLogo || '';
 
   return (
-    <div className="p-4 sm:p-5 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl text-white border border-slate-700 shadow-md space-y-4">
+    <div className="p-4 sm:p-5 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-2xl text-white border border-slate-700/90 shadow-lg space-y-4 relative">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-700/80 pb-3">
         <div>
           <h4 className="text-xs sm:text-sm font-black text-emerald-400 flex items-center gap-2">
@@ -223,16 +302,16 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
             type="file"
             ref={fileInputRef}
             accept="image/*"
-            onChange={handleLogoUpload}
+            onChange={handleLogoFileSelect}
             className="hidden"
             id="institute-logo-upload-input"
           />
           <label
             htmlFor="institute-logo-upload-input"
-            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
           >
             <Upload className="w-3.5 h-3.5" />
-            <span>{isUploading ? 'আপলোড হচ্ছে...' : 'নতুন লোগো আপলোড'}</span>
+            <span>{isUploading ? 'প্রসেসিং হচ্ছে...' : 'নতুন লোগো আপলোড'}</span>
           </label>
         </div>
       </div>
@@ -281,10 +360,21 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
       {/* SUGGESTED LOGOS GALLERY & SEARCH */}
       <div className="space-y-2.5">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-          <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>সেভ করা ও প্রস্তাবিত ইন্সটিটিউট লোগো সমূহ ({filteredLogos.length} টি)</span>
-          </label>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>সেভ করা ও প্রস্তাবিত ইন্সটিটিউট লোগো সমূহ ({filteredLogos.length} টি)</span>
+            </label>
+            <button
+              type="button"
+              onClick={handleResetGallery}
+              title="ডিফল্ট লোগো গ্যালারি রিসেট করুন"
+              className="text-[10px] text-slate-400 hover:text-emerald-400 flex items-center gap-1 transition-colors underline cursor-pointer"
+            >
+              <RefreshCw className="w-2.5 h-2.5" />
+              <span>রিসেট</span>
+            </button>
+          </div>
 
           {/* Search Field */}
           <div className="relative">
@@ -300,10 +390,9 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
         </div>
 
         {/* LOGO GRID CARDS */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 max-h-56 overflow-y-auto p-1 scrollbar-thin scrollbar-thumb-slate-700">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 max-h-60 overflow-y-auto p-1 scrollbar-thin scrollbar-thumb-slate-700">
           {filteredLogos.map((item) => {
             const isSelected = selectedLogoUrl === item.logoUrl;
-            const isCustom = item.id.startsWith('custom-');
 
             return (
               <div
@@ -312,30 +401,33 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
                 className={`relative group p-2.5 rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-between text-center gap-1.5 ${
                   isSelected
                     ? 'bg-emerald-950/80 border-emerald-400 shadow-md ring-2 ring-emerald-500/50'
-                    : 'bg-slate-800/80 hover:bg-slate-700 border-slate-700 hover:border-slate-500'
+                    : 'bg-slate-800/80 hover:bg-slate-700/90 border-slate-700 hover:border-slate-500'
                 }`}
               >
+                {/* Selection indicator */}
                 {isSelected && (
-                  <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-emerald-500 text-slate-900 flex items-center justify-center text-[10px] font-black">
+                  <span className="absolute top-1.5 left-1.5 w-4 h-4 rounded-full bg-emerald-500 text-slate-900 flex items-center justify-center text-[10px] font-black shadow-sm z-10">
                     ✓
                   </span>
                 )}
 
-                {isCustom && !isSelected && (
-                  <button
-                    type="button"
-                    onClick={(e) => handleDeleteCustomLogo(item.id, e)}
-                    title="লোগোটি মুছুন"
-                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 p-1 bg-rose-600/80 hover:bg-rose-600 text-white rounded-md transition-opacity cursor-pointer"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                )}
+                {/* Permanent Delete Button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLogoToDelete(item);
+                  }}
+                  title="গ্যালারি থেকে স্থায়ীভাবে মুছে ফেলুন"
+                  className="absolute top-1.5 right-1.5 p-1 bg-rose-600/90 hover:bg-rose-500 text-white rounded-md transition-all opacity-80 group-hover:opacity-100 hover:scale-110 shadow-sm z-10 cursor-pointer"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
 
                 <img
                   src={item.logoUrl}
                   alt={item.name}
-                  className="w-10 h-10 rounded-lg object-contain bg-white p-1 border border-slate-600 shadow-xs"
+                  className="w-10 h-10 rounded-lg object-contain bg-white p-1 border border-slate-600 shadow-xs mt-1"
                 />
 
                 <p className="text-[10px] font-bold text-slate-200 line-clamp-2 leading-tight">
@@ -346,12 +438,145 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
           })}
 
           {filteredLogos.length === 0 && (
-            <div className="col-span-full py-6 text-center text-xs text-slate-400 bg-slate-800/40 rounded-xl border border-slate-700">
-              কোনো ম্যাচিং লোগো পাওয়া যায়নি। ওপরের "নতুন লোগো আপলোড" বাটন ব্যবহার করুন।
+            <div className="col-span-full py-8 text-center text-xs text-slate-400 bg-slate-800/40 rounded-xl border border-slate-700">
+              কোনো ম্যাচিং লোগো পাওয়া যায়নি। ওপরের "নতুন লোগো আপলোড" বাটন ব্যবহার করে যুক্ত করুন।
             </div>
           )}
         </div>
       </div>
+
+      {/* BEAUTIFUL POPUP MODAL: NEW LOGO UPLOAD (INSTITUTE NAME INPUT) */}
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 text-white relative animate-in zoom-in-95 duration-200">
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowUploadModal(false);
+                setPendingLogoUrl(null);
+              }}
+              className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-white">নতুন ইন্সটিটিউট লোগো যুক্ত করুন</h3>
+                <p className="text-xs text-slate-400">প্রতিষ্ঠানের নাম দিয়ে লোগোটি স্থায়ীভাবে গ্যালারিতে সেভ করুন</p>
+              </div>
+            </div>
+
+            {/* Logo Preview */}
+            {pendingLogoUrl && (
+              <div className="flex flex-col items-center justify-center p-4 bg-slate-800/60 rounded-2xl border border-slate-700/70 gap-2">
+                <img
+                  src={pendingLogoUrl}
+                  alt="Uploaded Logo Preview"
+                  className="w-16 h-16 rounded-2xl object-contain bg-white p-2 border-2 border-emerald-400 shadow-md"
+                />
+                <span className="text-[11px] text-emerald-400 font-bold">লোগো প্রিভিউ সফল</span>
+              </div>
+            )}
+
+            {/* Form Form */}
+            <form onSubmit={handleSaveUploadedLogo} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-200 mb-1.5">
+                  প্রতিষ্ঠানের নাম (Institute Name) <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={uploadInstituteName}
+                  onChange={(e) => setUploadInstituteName(e.target.value)}
+                  placeholder="যেমন: বাংলাদেশ ব্যাংক, ঢাকা বিশ্ববিদ্যালয়, বিআরডিবি..."
+                  className="w-full px-4 py-2.5 bg-slate-800 text-sm text-white placeholder-slate-400 rounded-xl border border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  ভবিষ্যতে যেকোনো পোস্টের জন্য এই নামেই লোগোটি ১-ক্লিকে সিলেক্ট করতে পারবেন।
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    setPendingLogoUrl(null);
+                  }}
+                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer"
+                >
+                  বাতিল
+                </button>
+                <button
+                  type="submit"
+                  disabled={!uploadInstituteName.trim()}
+                  className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>সংরক্ষণ ও ব্যবহার করুন</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {logoToDelete && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-rose-500/40 rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-white relative animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="w-10 h-10 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-black text-white">স্থায়ীভাবে মুছে ফেলার নিশ্চিতকরণ</h3>
+            </div>
+
+            <div className="flex items-center gap-3 p-3 bg-slate-800/80 rounded-2xl border border-slate-700">
+              <img
+                src={logoToDelete.logoUrl}
+                alt={logoToDelete.name}
+                className="w-10 h-10 rounded-lg object-contain bg-white p-1 border border-slate-600"
+              />
+              <p className="text-xs font-bold text-slate-200 line-clamp-2">
+                {logoToDelete.name}
+              </p>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              আপনি কি নিশ্চিত যে এই ইন্সটিটিউট লোগোটি স্থায়ীভাবে গ্যালারি থেকে মুছে ফেলতে চান? এটি আর প্রদর্শিত হবে না।
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setLogoToDelete(null)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer"
+              >
+                বাতিল
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmPermanentDelete}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>হ্যাঁ, স্থায়ীভাবে মুছুন</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
