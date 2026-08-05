@@ -112,7 +112,7 @@ export const triggerPushBroadcast = async (payload: { title: string; body: strin
           vibrate: [200, 100, 200],
           data: { url },
           tag: `job-notice-${Date.now()}`
-        });
+        } as any);
       }).catch(() => {
         new Notification(`📢 ${payload.title}`, { body: payload.body, icon });
       });

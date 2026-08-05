@@ -5,6 +5,7 @@ import { GovtJobForm } from './forms/GovtJobForm';
 import { PrivateJobForm } from './forms/PrivateJobForm';
 import { ExamResultForm } from './forms/ExamResultForm';
 import { UniversityAdmissionForm } from './forms/UniversityAdmissionForm';
+import { InstituteLogoSelector } from './InstituteLogoSelector';
 
 interface JobFormProps {
   editingJob: Job | null;
@@ -59,7 +60,6 @@ export const JobForm: React.FC<JobFormProps> = ({
         setJobForm((prev: any) => ({
           ...prev,
           imageUrl: base64String,
-          companyLogo: base64String,
         }));
       };
       reader.readAsDataURL(file);
@@ -70,7 +70,6 @@ export const JobForm: React.FC<JobFormProps> = ({
     setJobForm((prev: any) => ({
       ...prev,
       imageUrl: '',
-      companyLogo: '',
     }));
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -160,7 +159,10 @@ export const JobForm: React.FC<JobFormProps> = ({
         </p>
       </div>
 
-      {/* STEP 2: DYNAMIC MODULAR FORM FIELDS BASED ON SELECTED POST TYPE */}
+      {/* STEP 2: INSTITUTE / ORGANIZATION LOGO MANAGEMENT */}
+      <InstituteLogoSelector jobForm={jobForm} setJobForm={setJobForm} />
+
+      {/* STEP 3: DYNAMIC MODULAR FORM FIELDS BASED ON SELECTED POST TYPE */}
       {postType === 'govt' && (
         <GovtJobForm jobForm={jobForm} setJobForm={setJobForm} />
       )}

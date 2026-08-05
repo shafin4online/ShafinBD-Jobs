@@ -50,6 +50,7 @@ export interface JobContextType {
   toggleJobStatus: (jobId: string) => void;
   toggleJobFeatured: (jobId: string) => void;
   updateProfile: (profile: Partial<UserProfile>) => void;
+  updateProfileSection: (sectionHandle: string, sectionData: Partial<UserProfile>) => void;
   applyForJob: (jobId: string, resumeNote?: string) => { success: boolean; message: string };
   updateApplicationStatus: (applicationId: string, status: ApplicationStatus, notes?: string) => void;
   toggleSaveJob: (jobId: string) => void;

@@ -9,6 +9,7 @@ import {
   deleteJobFromFirestore,
   saveApplicationToFirestore,
   saveProfileToFirestore,
+  saveProfileSectionToFirestore,
   clearDemoDataFromFirestore,
 } from '../lib/firestoreService';
 import { 
@@ -106,9 +107,64 @@ const INITIAL_SAMPLE_USERS: UserProfile[] = [
   }
 ];
 
+// Helper function for automated job lifecycle management
+export const processJobLifecycle = (jobList: Job[]): Job[] => {
+  if (!Array.isArray(jobList)) return [];
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0]; // e.g. '2026-08-05'
+  const threeYearsAgoMs = now.getTime() - (3 * 365.25 * 24 * 60 * 60 * 1000);
+
+  return jobList
+    .filter((job) => {
+      if (!job) return false;
+      // 3-Year Retention Rule: Delete jobs whose deadline/createdAt is older than 3 years (1095 days)
+      const deadlineDate = job.deadline ? new Date(job.deadline) : null;
+      const createdDate = job.createdAt ? new Date(job.createdAt) : null;
+      const refTime = deadlineDate && !isNaN(deadlineDate.getTime())
+        ? deadlineDate.getTime()
+        : (createdDate && !isNaN(createdDate.getTime()) ? createdDate.getTime() : null);
+
+      if (refTime && refTime < threeYearsAgoMs) {
+        // Automatically deleted after 3 years
+        return false;
+      }
+      return true;
+    })
+    .map((job) => {
+      // Deadline Expiration Rule: Automatically mark as closed/inactive if past deadline
+      if (job.deadline && job.status === 'active') {
+        if (todayStr > job.deadline) {
+          return { ...job, status: 'closed' as const };
+        }
+      }
+      return job;
+    });
+};
+
 export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [profile, setProfile] = useState<UserProfile>(INITIAL_PROFILE);
+  const [jobs, setJobs] = useState<Job[]>(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.JOBS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return processJobLifecycle(parsed);
+      }
+    } catch (e) {
+      console.error('Error loading local jobs:', e);
+    }
+    return [];
+  });
+  const [profile, setProfile] = useState<UserProfile>(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.PROFILE);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error('Error loading local profile:', e);
+    }
+    return INITIAL_PROFILE;
+  });
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
@@ -322,11 +378,41 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => { clearDemoDataFromFirestore(); }, []);
 
+  // Sync jobs to localStorage and run lifecycle processor
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.JOBS, JSON.stringify(jobs));
+    } catch (e) {
+      console.error('Failed to save jobs to local storage:', e);
+    }
+  }, [jobs]);
+
+  // Periodic automated lifecycle check (checks every 24 hours for deadline expiration and 3-year cleanup)
+  useEffect(() => {
+    const runCheck = () => {
+      setJobs((prevJobs) => {
+        const processed = processJobLifecycle(prevJobs);
+        if (JSON.stringify(processed) !== JSON.stringify(prevJobs)) {
+          return processed;
+        }
+        return prevJobs;
+      });
+    };
+
+    runCheck(); // Initial check on load
+    const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000; // 86,400,000 ms
+    const interval = setInterval(runCheck, TWENTY_FOUR_HOURS_MS); // Repeat check every 24 hours
+    return () => clearInterval(interval);
+  }, []);
+
   // Realtime listeners
   useEffect(() => {
     const unsubJobs = subscribeToJobs((loaded) => {
       const demoIds = new Set(['job-101', 'job-102', 'job-103', 'job-104', 'job-105', 'job-106']);
-      setJobs((loaded || []).filter((j) => !demoIds.has(j.id)));
+      const cleanLoaded = (loaded || []).filter((j) => !demoIds.has(j.id));
+      if (cleanLoaded.length > 0) {
+        setJobs(processJobLifecycle(cleanLoaded));
+      }
       setIsFirebaseConnected(true);
     }, () => setIsFirebaseConnected(false));
 
@@ -497,7 +583,26 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setProfile((prev) => {
       const newProf = { ...prev, ...updatedFields };
       if (authUser?.uid) newProf.id = authUser.uid;
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.PROFILE, JSON.stringify(newProf));
+      } catch (e) {
+        console.error('Failed to save profile to local storage:', e);
+      }
       saveProfileToFirestore(newProf);
+      return newProf;
+    });
+  };
+
+  const updateProfileSection = (sectionHandle: string, sectionData: Partial<UserProfile>) => {
+    setProfile((prev) => {
+      const newProf = { ...prev, ...sectionData };
+      if (authUser?.uid) newProf.id = authUser.uid;
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.PROFILE, JSON.stringify(newProf));
+      } catch (e) {
+        console.error('Failed to save profile section to local storage:', e);
+      }
+      saveProfileSectionToFirestore(newProf.id, sectionHandle, sectionData);
       return newProf;
     });
   };
@@ -579,7 +684,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         authError, setAuthError, showAuthModal, setShowAuthModal,
         showActivationModal, setShowActivationModal, signInWithGoogle,
         signInWithEmail, registerWithEmail, directProfileLogin, logoutUser, addJob,
-        updateJob, deleteJob, toggleJobStatus, toggleJobFeatured, updateProfile, applyForJob,
+        updateJob, deleteJob, toggleJobStatus, toggleJobFeatured, updateProfile, updateProfileSection, applyForJob,
         updateApplicationStatus, toggleSaveJob, setRole, loginAdmin, logoutAdmin, setFilters,
         resetFilters, setActiveTab, resetAllData, selectedJobForModal, setSelectedJobForModal,
         lang, setLang, isDarkMode, toggleDarkMode,

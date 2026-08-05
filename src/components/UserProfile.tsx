@@ -9,7 +9,7 @@ import { SavedJobsList } from './profile/SavedJobsList';
 import { CvDownloadModal } from './profile/CvDownloadModal';
 
 export const UserProfile: React.FC = () => {
-  const { profile, updateProfile, applications, jobs, authUser } = useJobContext();
+  const { profile, updateProfile, updateProfileSection, applications, jobs, authUser } = useJobContext();
 
   const [activeSubTab, setActiveSubTab] = useState<'profile' | 'applications' | 'saved'>('profile');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -233,9 +233,13 @@ export const UserProfile: React.FC = () => {
               setFormData={setFormData}
               completeness={completeness}
               onEditClick={() => setIsEditingProfile(true)}
-              onSaveProfile={(updatedData) => {
+              onSaveProfile={(updatedData, sectionHandle) => {
                 const dataToSave = updatedData || formData;
-                updateProfile(dataToSave);
+                if (sectionHandle) {
+                  updateProfileSection(sectionHandle, dataToSave);
+                } else {
+                  updateProfile(dataToSave);
+                }
                 setSaveToast(true);
                 setTimeout(() => setSaveToast(false), 3000);
               }}

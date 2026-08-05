@@ -224,7 +224,7 @@ export const AdminPanel: React.FC = () => {
     const payload = {
       title: jobForm.title,
       company: jobForm.company || 'Shafin BD Jobs',
-      companyLogo: jobForm.imageUrl || jobForm.companyLogo || '',
+      companyLogo: jobForm.companyLogo || jobForm.imageUrl || '',
       location: jobForm.location || 'বাংলাদেশ',
       jobType: jobForm.jobType || 'Full-time',
       category: jobForm.category || 'Govt. Job',
@@ -251,6 +251,26 @@ export const AdminPanel: React.FC = () => {
       writtenExamDate: jobForm.writtenExamDate || '',
       imageUrl: jobForm.imageUrl || '',
     };
+
+    // Auto-save institute logo into gallery for future reuse
+    if (jobForm.company && jobForm.companyLogo) {
+      try {
+        const stored = localStorage.getItem('SAVED_INSTITUTE_LOGOS_GALLERY');
+        const list = stored ? JSON.parse(stored) : [];
+        const nameKey = jobForm.company.trim().toLowerCase();
+        const exists = list.some((item: any) => item.name.trim().toLowerCase() === nameKey);
+        if (!exists) {
+          list.unshift({
+            id: `custom-logo-${Date.now()}`,
+            name: jobForm.company.trim(),
+            logoUrl: jobForm.companyLogo,
+          });
+          localStorage.setItem('SAVED_INSTITUTE_LOGOS_GALLERY', JSON.stringify(list));
+        }
+      } catch (e) {
+        console.error('Failed to update saved institute logos gallery:', e);
+      }
+    }
 
     if (editingJob) {
       updateJob({

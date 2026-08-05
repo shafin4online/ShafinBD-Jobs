@@ -27,7 +27,7 @@ interface ProfileDetailsViewProps {
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   completeness: number;
   onEditClick: () => void;
-  onSaveProfile: (updatedData?: any) => void;
+  onSaveProfile: (updatedData?: any, sectionHandle?: string) => void;
 }
 
 export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
@@ -58,7 +58,7 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
   };
 
   // Save changes for a specific section
-  const handleSaveSection = (sectionNameBangla: string) => {
+  const handleSaveSection = (sectionNameBangla: string, sectionHandle?: string) => {
     const isContactEdited = Boolean(
       formData.fullName || formData.email || formData.phone
     );
@@ -69,7 +69,7 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
     };
 
     setFormData(finalData);
-    onSaveProfile(finalData);
+    onSaveProfile(finalData, sectionHandle);
 
     setEditingSection(null);
     setTempFormData(null);
@@ -147,7 +147,7 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => handleSaveSection('ছবি ও স্বাক্ষর')}
+                onClick={() => handleSaveSection('ছবি ও স্বাক্ষর', 'media')}
                 className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" />
@@ -268,7 +268,7 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => handleSaveSection('ব্যক্তিগত তথ্য')}
+                onClick={() => handleSaveSection('ব্যক্তিগত তথ্য', 'personal')}
                 className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" />
@@ -371,7 +371,7 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => handleSaveSection('ঠিকানা বিবরণী')}
+                onClick={() => handleSaveSection('ঠিকানা বিবরণী', 'address')}
                 className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" />
@@ -454,7 +454,7 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSaveSection('SSC')}
+                    onClick={() => handleSaveSection('SSC', 'education_ssc')}
                     className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl flex items-center gap-1 shadow-md shadow-emerald-600/20 cursor-pointer"
                   >
                     <Save className="w-3.5 h-3.5" />
@@ -515,7 +515,7 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSaveSection('HSC')}
+                    onClick={() => handleSaveSection('HSC', 'education_hsc')}
                     className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl flex items-center gap-1 shadow-md shadow-emerald-600/20 cursor-pointer"
                   >
                     <Save className="w-3.5 h-3.5" />
@@ -579,7 +579,7 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSaveSection('Graduation')}
+                    onClick={() => handleSaveSection('Graduation', 'education_grad')}
                     className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl flex items-center gap-1 shadow-md shadow-emerald-600/20 cursor-pointer"
                   >
                     <Save className="w-3.5 h-3.5" />
@@ -644,7 +644,7 @@ export const ProfileDetailsView: React.FC<ProfileDetailsViewProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSaveSection('Masters')}
+                    onClick={() => handleSaveSection('Masters', 'education_masters')}
                     className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl flex items-center gap-1 shadow-md shadow-emerald-600/20 cursor-pointer"
                   >
                     <Save className="w-3.5 h-3.5" />
