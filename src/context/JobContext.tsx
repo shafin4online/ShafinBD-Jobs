@@ -26,120 +26,13 @@ import {
 import { JobContextType, DEFAULT_FILTERS, LOCAL_STORAGE_KEYS, AdminSubTab, AdminNotification } from './jobContextTypes';
 import { createGoogleProfile, createNewJobObject, createNewApplicationObject } from './jobHelpers';
 import { triggerPushBroadcast } from '../lib/pushNotification';
+import { ADMIN_EMAILS, INITIAL_CATEGORIES, INITIAL_SAMPLE_USERS, INITIAL_NOTIFICATIONS } from './jobConstants';
+import { processJobLifecycle } from './jobLifecycle';
+
+// Re-export for components that import directly from JobContext
+export { ADMIN_EMAILS, processJobLifecycle };
 
 const JobContext = createContext<JobContextType | undefined>(undefined);
-
-export const ADMIN_EMAILS = [
-  'shafinbd4u@gmail.com',
-  'rashidul4you@gmail.com',
-];
-
-const INITIAL_CATEGORIES = [
-  '🏛️ Govt. Job',
-  '💼 Private Job',
-  '🎓 University Admission Notice',
-  'Software & IT',
-  'Digital Marketing',
-  'Graphic Design',
-  'Banking & Finance',
-  'Customer Support',
-  'Data Entry',
-  'Engineering',
-  'Sales & Business',
-];
-
-const INITIAL_SAMPLE_USERS: UserProfile[] = [
-  {
-    id: 'usr-101',
-    fullName: 'Shafin BD (Admin)',
-    email: 'shafinbd4u@gmail.com',
-    phone: '01700000000',
-    title: 'Super Administrator',
-    location: 'Dhaka, Bangladesh',
-    skills: ['Management', 'React', 'Firebase', 'System Admin'],
-    experience: '5 Years',
-    education: 'B.Sc in CSE',
-    bio: 'Platform Owner & Administrator for ShafinBD Jobs',
-    registeredAt: '2026-01-01',
-    savedJobs: [],
-  },
-  {
-    id: 'usr-102',
-    fullName: 'Rashidul Islam (Admin)',
-    email: 'rashidul4you@gmail.com',
-    phone: '01800000000',
-    title: 'Co-Admin & Moderator',
-    location: 'Dhaka, Bangladesh',
-    skills: ['Operations', 'Recruitment', 'SQL'],
-    experience: '4 Years',
-    education: 'BBA in Marketing',
-    bio: 'Job Circular Moderator & Portal Admin',
-    registeredAt: '2026-01-05',
-    savedJobs: [],
-  },
-  {
-    id: 'usr-103',
-    fullName: 'Tanvir Ahmed',
-    email: 'tanvir.dev@gmail.com',
-    phone: '01912345678',
-    title: 'Senior Full Stack Web Developer',
-    location: 'Dhaka (Uttara)',
-    skills: ['React', 'Node.js', 'TypeScript', 'Tailwind'],
-    experience: '3.5 Years',
-    education: 'B.Sc in CSE (BUET)',
-    bio: 'Passionate Web Developer looking for full-time remote or hybrid opportunities.',
-    registeredAt: '2026-02-10',
-    savedJobs: [],
-  },
-  {
-    id: 'usr-104',
-    fullName: 'Anika Rahman',
-    email: 'anika.mktg@gmail.com',
-    phone: '01711223344',
-    title: 'Digital Marketing & SEO Specialist',
-    location: 'Chittagong',
-    skills: ['SEO', 'Google Ads', 'Content Strategy', 'Social Media'],
-    experience: '2 Years',
-    education: 'BBA in Management (CU)',
-    bio: 'E-commerce & Brand Growth Marketer.',
-    registeredAt: '2026-02-15',
-    savedJobs: [],
-  }
-];
-
-// Helper function for automated job lifecycle management
-export const processJobLifecycle = (jobList: Job[]): Job[] => {
-  if (!Array.isArray(jobList)) return [];
-  const now = new Date();
-  const todayStr = now.toISOString().split('T')[0]; // e.g. '2026-08-05'
-  const threeYearsAgoMs = now.getTime() - (3 * 365.25 * 24 * 60 * 60 * 1000);
-
-  return jobList
-    .filter((job) => {
-      if (!job) return false;
-      // 3-Year Retention Rule: Delete jobs whose deadline/createdAt is older than 3 years (1095 days)
-      const deadlineDate = job.deadline ? new Date(job.deadline) : null;
-      const createdDate = job.createdAt ? new Date(job.createdAt) : null;
-      const refTime = deadlineDate && !isNaN(deadlineDate.getTime())
-        ? deadlineDate.getTime()
-        : (createdDate && !isNaN(createdDate.getTime()) ? createdDate.getTime() : null);
-
-      if (refTime && refTime < threeYearsAgoMs) {
-        // Automatically deleted after 3 years
-        return false;
-      }
-      return true;
-    })
-    .map((job) => {
-      // Deadline Expiration Rule: Automatically mark as closed/inactive if past deadline
-      if (job.deadline && job.status === 'active') {
-        if (todayStr > job.deadline) {
-          return { ...job, status: 'closed' as const };
-        }
-      }
-      return job;
-    });
-};
 
 export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [jobs, setJobs] = useState<Job[]>(() => {
@@ -154,6 +47,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     return [];
   });
+
   const [profile, setProfile] = useState<UserProfile>(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.PROFILE);
@@ -165,6 +59,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     return INITIAL_PROFILE;
   });
+
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
@@ -247,18 +142,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
   const [adminSubTab, setAdminSubTab] = useState<AdminSubTab>('overview');
   const [categoriesList, setCategoriesList] = useState<string[]>(INITIAL_CATEGORIES);
-  const [notificationsList, setNotificationsList] = useState<AdminNotification[]>([
-    {
-      id: 'notif-1',
-      title: 'নতুন সরকারি প্রাথমিক নিয়োগ বিজ্ঞপ্তি ২০২৬',
-      message: 'বাংলাদেশ প্রাথমিক শিক্ষা অধিদপ্তর কর্তৃক সহকারী শিক্ষক নিয়োগের নিয়োগ বিজ্ঞপ্তি প্রকাশ করা হয়েছে।',
-      target: 'All Users',
-      type: 'Circular Alert',
-      sentAt: new Date().toLocaleDateString('bn-BD') + ' 10:30 AM',
-    }
-  ]);
+  const [notificationsList, setNotificationsList] = useState<AdminNotification[]>(INITIAL_NOTIFICATIONS);
   const [userList, setUserList] = useState<UserProfile[]>(INITIAL_SAMPLE_USERS);
 
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);

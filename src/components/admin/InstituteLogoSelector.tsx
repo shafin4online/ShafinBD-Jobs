@@ -1,68 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Building2, Upload, Search, Check, Trash2, Sparkles, Image as ImageIcon, X, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Building2, Upload, Search, Check, Trash2, Sparkles, Image as ImageIcon, RefreshCw } from 'lucide-react';
 import { useJobContext } from '../../context/JobContext';
+import {
+  SavedInstituteLogo,
+  DEFAULT_INSTITUTE_LOGOS,
+  LOCAL_STORAGE_LOGOS_KEY,
+  DELETED_LOGOS_KEY,
+} from './instituteLogoData';
+import { UploadLogoModal } from './UploadLogoModal';
+import { DeleteLogoModal } from './DeleteLogoModal';
 
-export interface SavedInstituteLogo {
-  id: string;
-  name: string;
-  logoUrl: string;
-  category?: string;
-}
-
-// Default popular institutes in Bangladesh with clean vector / SVG badges
-const DEFAULT_INSTITUTE_LOGOS: SavedInstituteLogo[] = [
-  {
-    id: 'default-bpsc',
-    name: 'বাংলাদেশ সরকারি কর্ম কমিশন (BPSC)',
-    category: 'Govt',
-    logoUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23065f46"/><circle cx="50" cy="50" r="32" fill="%23dc2626"/><text x="50" y="56" font-size="22" font-weight="bold" fill="%23ffffff" text-anchor="middle" font-family="sans-serif">BPSC</text></svg>',
-  },
-  {
-    id: 'default-bb',
-    name: 'বাংলাদেশ ব্যাংক (Bangladesh Bank)',
-    category: 'Bank',
-    logoUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230f172a"/><circle cx="50" cy="50" r="30" fill="%23047857"/><text x="50" y="56" font-size="20" font-weight="bold" fill="%23f59e0b" text-anchor="middle" font-family="sans-serif">BB</text></svg>',
-  },
-  {
-    id: 'default-du',
-    name: 'ঢাকা বিশ্ববিদ্যালয় (University of Dhaka)',
-    category: 'University',
-    logoUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231e3a8a"/><circle cx="50" cy="50" r="30" fill="%23ffffff"/><text x="50" y="57" font-size="24" font-weight="bold" fill="%231e3a8a" text-anchor="middle" font-family="sans-serif">DU</text></svg>',
-  },
-  {
-    id: 'default-buet',
-    name: 'বাংলাদেশ প্রকৌশল বিশ্ববিদ্যালয় (BUET)',
-    category: 'University',
-    logoUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23831843"/><circle cx="50" cy="50" r="30" fill="%23fef08a"/><text x="50" y="56" font-size="18" font-weight="bold" fill="%23831843" text-anchor="middle" font-family="sans-serif">BUET</text></svg>',
-  },
-  {
-    id: 'default-dpe',
-    name: 'প্রাথমিক শিক্ষা অধিদপ্তর (DPE)',
-    category: 'Govt',
-    logoUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23047857"/><circle cx="50" cy="50" r="28" fill="%23fef08a"/><text x="50" y="56" font-size="20" font-weight="bold" fill="%23047857" text-anchor="middle" font-family="sans-serif">DPE</text></svg>',
-  },
-  {
-    id: 'default-gp',
-    name: 'গ্রামীণফোন (Grameenphone)',
-    category: 'Private',
-    logoUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230284c7"/><path d="M30 65 Q 50 20 70 65" stroke="%23ffffff" stroke-width="8" fill="none"/><circle cx="50" cy="35" r="10" fill="%2338bdf8"/></svg>',
-  },
-  {
-    id: 'default-brac',
-    name: 'ব্র্যাক / ব্র্যাক ব্যাংক (BRAC)',
-    category: 'Private',
-    logoUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23e11d48"/><text x="50" y="58" font-size="20" font-weight="extrabold" fill="%23ffffff" text-anchor="middle" font-family="sans-serif">BRAC</text></svg>',
-  },
-  {
-    id: 'default-square',
-    name: 'স্কয়ার গ্রুপ (Square Group)',
-    category: 'Private',
-    logoUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23059669"/><rect x="25" y="25" width="50" height="50" rx="10" fill="%23ffffff"/><text x="50" y="56" font-size="22" font-weight="bold" fill="%23059669" text-anchor="middle" font-family="sans-serif">SQ</text></svg>',
-  },
-];
-
-const LOCAL_STORAGE_LOGOS_KEY = 'SAVED_INSTITUTE_LOGOS_GALLERY';
-const DELETED_LOGOS_KEY = 'DELETED_INSTITUTE_LOGOS_GALLERY_IDS';
+export type { SavedInstituteLogo };
 
 interface InstituteLogoSelectorProps {
   jobForm: any;
@@ -121,7 +69,7 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
 
       // Combine defaults + custom saved + job extracted logos (excluding deleted)
       const combinedMap = new Map<string, SavedInstituteLogo>();
-      
+
       DEFAULT_INSTITUTE_LOGOS.forEach((item) => {
         const normName = item.name.trim().toLowerCase();
         if (!deletedKeys.has(item.id.toLowerCase()) && !deletedKeys.has(normName)) {
@@ -171,7 +119,7 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
     });
   };
 
-  // Upload new logo file handler -> opens beautiful custom popup modal
+  // Upload new logo file handler -> opens custom popup modal
   const handleLogoFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -445,138 +393,26 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
         </div>
       </div>
 
-      {/* BEAUTIFUL POPUP MODAL: NEW LOGO UPLOAD (INSTITUTE NAME INPUT) */}
+      {/* BEAUTIFUL POPUP MODAL: NEW LOGO UPLOAD */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 text-white relative animate-in zoom-in-95 duration-200">
-            {/* Close button */}
-            <button
-              type="button"
-              onClick={() => {
-                setShowUploadModal(false);
-                setPendingLogoUrl(null);
-              }}
-              className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            {/* Modal Header */}
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <Building2 className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-base font-black text-white">নতুন ইন্সটিটিউট লোগো যুক্ত করুন</h3>
-                <p className="text-xs text-slate-400">প্রতিষ্ঠানের নাম দিয়ে লোগোটি স্থায়ীভাবে গ্যালারিতে সেভ করুন</p>
-              </div>
-            </div>
-
-            {/* Logo Preview */}
-            {pendingLogoUrl && (
-              <div className="flex flex-col items-center justify-center p-4 bg-slate-800/60 rounded-2xl border border-slate-700/70 gap-2">
-                <img
-                  src={pendingLogoUrl}
-                  alt="Uploaded Logo Preview"
-                  className="w-16 h-16 rounded-2xl object-contain bg-white p-2 border-2 border-emerald-400 shadow-md"
-                />
-                <span className="text-[11px] text-emerald-400 font-bold">লোগো প্রিভিউ সফল</span>
-              </div>
-            )}
-
-            {/* Form Form */}
-            <form onSubmit={handleSaveUploadedLogo} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-200 mb-1.5">
-                  প্রতিষ্ঠানের নাম (Institute Name) <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  autoFocus
-                  value={uploadInstituteName}
-                  onChange={(e) => setUploadInstituteName(e.target.value)}
-                  placeholder="যেমন: বাংলাদেশ ব্যাংক, ঢাকা বিশ্ববিদ্যালয়, বিআরডিবি..."
-                  className="w-full px-4 py-2.5 bg-slate-800 text-sm text-white placeholder-slate-400 rounded-xl border border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-                />
-                <p className="text-[11px] text-slate-400 mt-1">
-                  ভবিষ্যতে যেকোনো পোস্টের জন্য এই নামেই লোগোটি ১-ক্লিকে সিলেক্ট করতে পারবেন।
-                </p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-2.5 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowUploadModal(false);
-                    setPendingLogoUrl(null);
-                  }}
-                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer"
-                >
-                  বাতিল
-                </button>
-                <button
-                  type="submit"
-                  disabled={!uploadInstituteName.trim()}
-                  className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>সংরক্ষণ ও ব্যবহার করুন</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <UploadLogoModal
+          pendingLogoUrl={pendingLogoUrl}
+          uploadInstituteName={uploadInstituteName}
+          setUploadInstituteName={setUploadInstituteName}
+          onClose={() => {
+            setShowUploadModal(false);
+            setPendingLogoUrl(null);
+          }}
+          onSave={handleSaveUploadedLogo}
+        />
       )}
 
       {/* DELETE CONFIRMATION MODAL */}
-      {logoToDelete && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-rose-500/40 rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-white relative animate-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-3 text-rose-400">
-              <div className="w-10 h-10 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-              <h3 className="text-sm font-black text-white">স্থায়ীভাবে মুছে ফেলার নিশ্চিতকরণ</h3>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 bg-slate-800/80 rounded-2xl border border-slate-700">
-              <img
-                src={logoToDelete.logoUrl}
-                alt={logoToDelete.name}
-                className="w-10 h-10 rounded-lg object-contain bg-white p-1 border border-slate-600"
-              />
-              <p className="text-xs font-bold text-slate-200 line-clamp-2">
-                {logoToDelete.name}
-              </p>
-            </div>
-
-            <p className="text-xs text-slate-300 leading-relaxed">
-              আপনি কি নিশ্চিত যে এই ইন্সটিটিউট লোগোটি স্থায়ীভাবে গ্যালারি থেকে মুছে ফেলতে চান? এটি আর প্রদর্শিত হবে না।
-            </p>
-
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setLogoToDelete(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer"
-              >
-                বাতিল
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmPermanentDelete}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>হ্যাঁ, স্থায়ীভাবে মুছুন</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteLogoModal
+        logoToDelete={logoToDelete}
+        onClose={() => setLogoToDelete(null)}
+        onConfirm={handleConfirmPermanentDelete}
+      />
     </div>
   );
 };
-

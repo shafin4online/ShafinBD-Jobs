@@ -93,17 +93,39 @@ export const JobDetailsModal: React.FC = () => {
         {/* Modal Scrollable Body */}
         <div className="p-5 sm:p-6 overflow-y-auto space-y-6 text-slate-800">
 
-          {/* Display Base64 Image if available */}
-          {job.imageUrl && (
-            <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 p-2 shadow-xs">
-              <img
-                src={job.imageUrl}
-                alt={job.title}
-                className="w-full max-h-80 object-contain rounded-xl bg-white"
-              />
-              <p className="text-[10px] text-center text-slate-400 font-bold mt-1.5">অফিসিয়াল নিয়োগ বা ফলাফল বিজ্ঞপ্তি</p>
-            </div>
-          )}
+          {/* Display Base64 Images if available */}
+          {(() => {
+            const imagesList =
+              job.imageUrls && Array.isArray(job.imageUrls) && job.imageUrls.length > 0
+                ? job.imageUrls
+                : job.imageUrl
+                ? [job.imageUrl]
+                : [];
+
+            if (imagesList.length === 0) return null;
+
+            return (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                  <span>অফিসিয়াল নিয়োগ বা ফলাফল বিজ্ঞপ্তি ({imagesList.length} টি ছবি)</span>
+                </div>
+                {imagesList.map((imgUrl, idx) => (
+                  <div key={idx} className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 p-2 shadow-xs space-y-1">
+                    {imagesList.length > 1 && (
+                      <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md inline-block">
+                        পৃষ্ঠা {idx + 1} / {imagesList.length}
+                      </span>
+                    )}
+                    <img
+                      src={imgUrl}
+                      alt={`${job.title} - Page ${idx + 1}`}
+                      className="w-full max-h-96 object-contain rounded-xl bg-white"
+                    />
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Quick Metrics Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs font-semibold">

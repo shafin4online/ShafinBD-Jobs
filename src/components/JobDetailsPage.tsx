@@ -202,22 +202,52 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
           </div>
 
           {/* Official Circular Notice Image Section */}
-          <div id="circular-image" className="pt-4 space-y-3 w-full">
-            {job.imageUrl ? (
-              <div className="bg-white rounded-2xl p-2 sm:p-4 shadow-xl overflow-hidden border border-slate-800">
-                <img
-                  src={job.imageUrl}
-                  alt={job.title}
-                  className="w-full h-auto object-contain rounded-xl"
-                />
-              </div>
-            ) : (
-              <div className="bg-slate-900 rounded-2xl p-8 text-center border border-slate-800 space-y-2">
-                <Building2 className="w-12 h-12 text-slate-600 mx-auto" />
-                <p className="text-sm font-bold text-slate-300">অফিসিয়াল নিয়োগ বিজ্ঞপ্তির ছবি দেখতে উপরের লিংকে ভিজিট করুন</p>
-                {job.company && <p className="text-xs text-slate-500">{job.company}</p>}
-              </div>
-            )}
+          <div id="circular-image" className="pt-4 space-y-4 w-full">
+            {(() => {
+              const imagesList =
+                job.imageUrls && Array.isArray(job.imageUrls) && job.imageUrls.length > 0
+                  ? job.imageUrls
+                  : job.imageUrl
+                  ? [job.imageUrl]
+                  : [];
+
+              if (imagesList.length === 0) {
+                return (
+                  <div className="bg-slate-900 rounded-2xl p-8 text-center border border-slate-800 space-y-2">
+                    <Building2 className="w-12 h-12 text-slate-600 mx-auto" />
+                    <p className="text-sm font-bold text-slate-300">অফিসিয়াল নিয়োগ বিজ্ঞপ্তির ছবি দেখতে উপরের লিংকে ভিজিট করুন</p>
+                    {job.company && <p className="text-xs text-slate-500">{job.company}</p>}
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-300 px-1">
+                    <span>অফিসিয়াল নিয়োগ / ফলাফল বিজ্ঞপ্তি ({imagesList.length} টি পৃষ্ঠা)</span>
+                    <span className="text-emerald-400">নিচে স্ক্রোল করে সব পৃষ্ঠা দেখুন ↓</span>
+                  </div>
+
+                  {imagesList.map((imgUrl, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white rounded-2xl p-2 sm:p-4 shadow-xl overflow-hidden border border-slate-800 space-y-2"
+                    >
+                      {imagesList.length > 1 && (
+                        <div className="bg-slate-900 text-emerald-400 font-black text-xs px-3 py-1.5 rounded-xl w-fit">
+                          বিজ্ঞপ্তি পৃষ্ঠা {idx + 1} / {imagesList.length}
+                        </div>
+                      )}
+                      <img
+                        src={imgUrl}
+                        alt={`${job.title} - Page ${idx + 1}`}
+                        className="w-full h-auto object-contain rounded-xl"
+                      />
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Social Share Section at the bottom */}

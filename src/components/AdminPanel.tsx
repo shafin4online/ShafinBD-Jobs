@@ -159,6 +159,7 @@ export const AdminPanel: React.FC = () => {
     passedCount: '',
     writtenExamDate: '',
     imageUrl: '',
+    imageUrls: [] as string[],
     status: 'active' as 'active' | 'closed',
     featured: true,
   });
@@ -221,10 +222,17 @@ export const AdminPanel: React.FC = () => {
       .map((s) => s.replace(/^[•\-\*]\s*/, '').trim())
       .filter(Boolean);
 
+    const imageUrlsList =
+      jobForm.imageUrls && Array.isArray(jobForm.imageUrls) && jobForm.imageUrls.length > 0
+        ? jobForm.imageUrls
+        : jobForm.imageUrl
+        ? [jobForm.imageUrl]
+        : [];
+
     const payload = {
       title: jobForm.title,
       company: jobForm.company || 'Shafin BD Jobs',
-      companyLogo: jobForm.companyLogo || jobForm.imageUrl || '',
+      companyLogo: jobForm.companyLogo || imageUrlsList[0] || jobForm.imageUrl || '',
       location: jobForm.location || 'বাংলাদেশ',
       jobType: jobForm.jobType || 'Full-time',
       category: jobForm.category || 'Govt. Job',
@@ -249,7 +257,8 @@ export const AdminPanel: React.FC = () => {
       examDate: jobForm.examDate || '',
       passedCount: jobForm.passedCount || '',
       writtenExamDate: jobForm.writtenExamDate || '',
-      imageUrl: jobForm.imageUrl || '',
+      imageUrl: imageUrlsList[0] || jobForm.imageUrl || '',
+      imageUrls: imageUrlsList,
     };
 
     // Auto-save institute logo into gallery for future reuse
@@ -309,6 +318,7 @@ export const AdminPanel: React.FC = () => {
       passedCount: '',
       writtenExamDate: '',
       imageUrl: '',
+      imageUrls: [],
       status: 'active',
       featured: true,
     });
@@ -318,6 +328,13 @@ export const AdminPanel: React.FC = () => {
 
   const startEditJob = (job: Job) => {
     setEditingJob(job);
+    const existingImages =
+      job.imageUrls && Array.isArray(job.imageUrls) && job.imageUrls.length > 0
+        ? job.imageUrls
+        : job.imageUrl
+        ? [job.imageUrl]
+        : [];
+
     setJobForm({
       postType: job.postType || (job.category === 'Private Job' ? 'private' : job.category === 'University Admission Notice' ? 'university' : 'govt'),
       title: job.title || '',
@@ -342,7 +359,8 @@ export const AdminPanel: React.FC = () => {
       examDate: job.examDate || '',
       passedCount: job.passedCount || '',
       writtenExamDate: job.writtenExamDate || '',
-      imageUrl: job.imageUrl || job.companyLogo || '',
+      imageUrl: existingImages[0] || job.imageUrl || job.companyLogo || '',
+      imageUrls: existingImages,
       status: job.status || 'active',
       featured: job.featured ?? true,
     });

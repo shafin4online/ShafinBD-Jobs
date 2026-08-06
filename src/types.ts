@@ -50,7 +50,8 @@ export interface Job {
   examDate?: string;           // পরীক্ষার তারিখ
   passedCount?: string;        // উত্তীর্ণ সংখ্যা
   writtenExamDate?: string;    // লিখিত পরীক্ষার তারিখ
-  imageUrl?: string;           // Base64 Image
+  imageUrl?: string;           // Base64 Image (Primary/First Image)
+  imageUrls?: string[];        // Multiple Base64 Images for Multi-page Circulars/Results
 }
 
 export interface UserProfile {
