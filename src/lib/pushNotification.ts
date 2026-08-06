@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, collection, doc, setDoc, serverTimestamp, getDocs } from "firebase/firestore";
+import { getFirestore, collection, doc, setDoc, serverTimestamp, getDocs, onSnapshot, query, orderBy, limit } from "firebase/firestore";
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
 import { firebaseConfig, db } from "./firebase";
 
@@ -134,5 +134,82 @@ export const triggerPushBroadcast = async (payload: { title: string; body: strin
     });
   } catch (err) {
     console.warn("Could not record broadcast to Firestore:", err);
+  }
+};
+
+/**
+ * Setup Realtime Listener for Push Broadcasts in Firestore.
+ * Whenever Admin publishes a job or sends a notification,
+ * Firestore sends real-time snapshot to all active/installed PWA user devices!
+ */
+export const setupPushBroadcastListener = () => {
+  if (typeof window === "undefined" || !("Notification" in window)) return;
+
+  try {
+    const broadcastsRef = collection(db, "push_broadcasts");
+    const q = query(broadcastsRef, orderBy("createdAt", "desc"), limit(3));
+
+    const listenerStartTime = Date.now();
+    let seenBroadcasts: Set<string>;
+    try {
+      seenBroadcasts = new Set<string>(
+        JSON.parse(localStorage.getItem("shafinbd_seen_broadcasts") || "[]")
+      );
+    } catch {
+      seenBroadcasts = new Set<string>();
+    }
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change: any) => {
+        if (change.type === "added") {
+          const id = change.doc.id;
+          const data = change.doc.data();
+
+          if (seenBroadcasts.has(id)) return;
+
+          const createdAtMs = data.createdAt?.toMillis ? data.createdAt.toMillis() : Date.now();
+
+          seenBroadcasts.add(id);
+          try {
+            const arr = Array.from(seenBroadcasts).slice(-50);
+            localStorage.setItem("shafinbd_seen_broadcasts", JSON.stringify(arr));
+          } catch {}
+
+          // Ignore historical broadcasts from before the current app launch
+          if (createdAtMs < listenerStartTime - 180000) return;
+
+          // Show system notification
+          if (getNotificationPermission() === "granted") {
+            const title = data.title ? `📢 ${data.title}` : "ShafinBD Jobs - নতুন চাকরির বিজ্ঞপ্তি";
+            const body = data.body || "নতুন নিয়োগ বিজ্ঞপ্তি প্রকাশিত হয়েছে!";
+            const icon = data.icon || NOTIFICATION_ICON;
+            const url = data.url || "/";
+
+            if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+              navigator.serviceWorker.ready.then((reg) => {
+                reg.showNotification(title, {
+                  body,
+                  icon,
+                  badge: icon,
+                  vibrate: [200, 100, 200],
+                  data: { url },
+                  tag: `broadcast-${id}`
+                } as any);
+              }).catch(() => {
+                new Notification(title, { body, icon });
+              });
+            } else if ("Notification" in window) {
+              new Notification(title, { body, icon });
+            }
+          }
+        }
+      });
+    }, (error: any) => {
+      console.warn("Firestore push broadcast listener warning:", error);
+    });
+
+    return unsubscribe;
+  } catch (err) {
+    console.warn("Could not setup push broadcast listener:", err);
   }
 };

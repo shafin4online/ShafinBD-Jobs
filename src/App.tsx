@@ -14,6 +14,7 @@ import { AccountActivationModal } from './components/AccountActivationModal';
 import { Footer } from './components/Footer';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { NotificationPermissionModal } from './components/NotificationPermissionModal';
+import { setupPushBroadcastListener } from './lib/pushNotification';
 import { LoginRequiredCard } from './components/LoginRequiredCard';
 import { MobileFilterModal } from './components/MobileFilterModal';
 
@@ -40,6 +41,14 @@ const MainContent: React.FC = () => {
 
   // Hash & Popstate Listener for Job Details Page & Mobile Back Button Navigation
   const [currentHash, setCurrentHash] = useState(window.location.hash);
+
+  useEffect(() => {
+    // Setup real-time push broadcast listener for PWA devices
+    const unsubscribe = setupPushBroadcastListener();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     const handleHashChange = () => {
