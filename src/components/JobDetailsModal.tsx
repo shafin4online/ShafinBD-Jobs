@@ -110,16 +110,16 @@ export const JobDetailsModal: React.FC = () => {
                   <span>অফিসিয়াল নিয়োগ বা ফলাফল বিজ্ঞপ্তি ({imagesList.length} টি ছবি)</span>
                 </div>
                 {imagesList.map((imgUrl, idx) => (
-                  <div key={idx} className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 p-2 shadow-xs space-y-1">
+                  <div key={idx} className="-mx-3 sm:mx-0 rounded-none sm:rounded-2xl overflow-hidden border-y sm:border border-slate-200 bg-slate-50 p-0 sm:p-2 shadow-xs space-y-1">
                     {imagesList.length > 1 && (
-                      <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md inline-block">
+                      <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 m-1.5 rounded-md inline-block">
                         পৃষ্ঠা {idx + 1} / {imagesList.length}
                       </span>
                     )}
                     <img
                       src={imgUrl}
                       alt={`${job.title} - Page ${idx + 1}`}
-                      className="w-full max-h-96 object-contain rounded-xl bg-white"
+                      className="w-full h-auto max-h-[85vh] object-contain block bg-white"
                     />
                   </div>
                 ))}
