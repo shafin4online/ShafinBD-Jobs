@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Job, UserProfile, JobApplication, FilterState, ActiveTab, ApplicationStatus } from '../types';
 import { INITIAL_PROFILE } from '../data/initialData';
 import {
@@ -149,7 +149,23 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [userList, setUserList] = useState<UserProfile[]>(INITIAL_SAMPLE_USERS);
 
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
-  const [selectedJobForModal, setSelectedJobForModal] = useState<Job | null>(null);
+  const [selectedJobForModal, setSelectedJobForModalState] = useState<Job | null>(null);
+
+  const setSelectedJobForModal = useCallback((job: Job | null) => {
+    setSelectedJobForModalState(job);
+    if (typeof window !== 'undefined') {
+      if (job) {
+        const targetHash = `#/job/${job.id}`;
+        if (window.location.hash !== targetHash) {
+          window.location.hash = targetHash;
+        }
+      } else {
+        if (window.location.hash.startsWith('#/job/')) {
+          window.location.hash = '';
+        }
+      }
+    }
+  }, []);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(true);
   const [lang, setLang] = useState<'BN' | 'EN'>('BN');
 

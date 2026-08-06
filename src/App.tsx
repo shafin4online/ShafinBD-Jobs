@@ -38,16 +38,26 @@ const MainContent: React.FC = () => {
   const [filterCollapsed, setFilterCollapsed] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  // Hash Route Listener for Job Details Page URL
+  // Hash & Popstate Listener for Job Details Page & Mobile Back Button Navigation
   const [currentHash, setCurrentHash] = useState(window.location.hash);
 
   useEffect(() => {
     const handleHashChange = () => {
-      setCurrentHash(window.location.hash);
+      const newHash = window.location.hash;
+      setCurrentHash(newHash);
+      if (!newHash.startsWith('#/job/')) {
+        setSelectedJobForModal(null);
+      }
     };
+
     window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+    window.addEventListener('popstate', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('popstate', handleHashChange);
+    };
+  }, [setSelectedJobForModal]);
 
   // Infinite Scroll State
   const [visibleCount, setVisibleCount] = useState(6);

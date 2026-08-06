@@ -68,22 +68,22 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
           hideMobileSubNav={true}
         />
 
-        <main className="flex-1 p-3 sm:p-6 md:p-8 flex flex-col items-center max-w-4xl w-full mx-auto space-y-6">
+        <main className="flex-1 p-2 sm:p-4 md:p-6 flex flex-col items-center max-w-4xl w-full mx-auto space-y-3">
           
           {/* Main Title Section - Prominent Cyan/Sky Blue */}
-          <div className="text-center pt-2 pb-2 space-y-2 w-full">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-sky-400 leading-snug tracking-wide">
+          <div className="text-center pt-1 pb-1 space-y-1 w-full">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-sky-400 leading-snug tracking-wide">
               {job.title}
             </h1>
-            <p className="text-xs text-slate-400 font-medium">
+            <p className="text-[11px] text-slate-400 font-medium">
               পোস্ট আইডি: <span className="font-mono text-slate-300">/job/{job.id}</span>
             </p>
           </div>
 
-          {/* Informational Details Section with Finger Point Emojis (👉) & Flags */}
-          <div className="bg-slate-950/90 rounded-2xl p-5 sm:p-7 border border-slate-900 space-y-3 text-sm sm:text-base leading-relaxed text-slate-200 font-medium w-full">
+          {/* Informational Details Section with Finger Point Emojis (👉) & Flags - Minimal Padding & Compact Spacing */}
+          <div className="bg-slate-950/90 rounded-xl p-3 sm:p-4 border border-slate-900 space-y-1 sm:space-y-1.5 text-xs sm:text-sm leading-tight text-slate-200 font-medium w-full">
             
-            <p className="flex items-start gap-2">
+            <p className="flex items-start gap-1.5">
               <span>👉</span>
               <span>
                 <strong className="text-slate-100">Deadline :</strong>{' '}
@@ -91,7 +91,7 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
               </span>
             </p>
 
-            <p className="flex items-start gap-2">
+            <p className="flex items-start gap-1.5">
               <span>👉</span>
               <span>
                 <strong className="text-slate-100">আবেদন শুরুঃ</strong>{' '}
@@ -99,27 +99,27 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
               </span>
             </p>
 
-            <div className="py-2 text-center text-lg font-bold text-slate-100 flex items-center justify-center gap-2">
+            <div className="py-1 my-0.5 text-center text-sm sm:text-base font-bold text-slate-100 flex items-center justify-center gap-2">
               <span>🇧🇩</span>
               <span className="text-sky-300 border-b border-sky-500/40 pb-0.5">নিয়োগ বিজ্ঞপ্তি</span>
               <span>🇧🇩</span>
             </div>
 
-            <p className="flex items-start gap-2">
+            <p className="flex items-start gap-1.5">
               <span>👉</span>
               <span>
                 <strong className="text-slate-100">প্রতিষ্ঠানঃ</strong> {job.company}
               </span>
             </p>
 
-            <p className="flex items-start gap-2">
+            <p className="flex items-start gap-1.5">
               <span>👉</span>
               <span>
                 <strong className="text-slate-100">পদের নামঃ</strong> {job.position || job.title}
               </span>
             </p>
 
-            <p className="flex items-start gap-2">
+            <p className="flex items-start gap-1.5">
               <span>👉</span>
               <span>
                 <strong className="text-slate-100">পদ সংখ্যাঃ</strong>{' '}
@@ -127,14 +127,14 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
               </span>
             </p>
 
-            <p className="flex items-start gap-2">
+            <p className="flex items-start gap-1.5">
               <span>👉</span>
               <span>
                 <strong className="text-slate-100">আবেদন ফিঃ</strong> {job.applicationFee || 'বিজ্ঞপ্তি অনুযায়ী'}
               </span>
             </p>
 
-            <p className="flex items-start gap-2">
+            <p className="flex items-start gap-1.5">
               <span>👉</span>
               <span>
                 <strong className="text-slate-100">আবেদন শুরুঃ</strong> {job.startDate || 'বিজ্ঞপ্তি প্রকাশিত'}
@@ -142,7 +142,7 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
             </p>
 
             {job.applicationUrl && (
-              <p className="flex items-start gap-2 break-all">
+              <p className="flex items-start gap-1.5 break-all">
                 <span>👉</span>
                 <span>
                   <strong className="text-slate-100">আবেদনের লিংকঃ</strong>{' '}
@@ -158,7 +158,7 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
               </p>
             )}
 
-            <p className="flex items-start gap-2">
+            <p className="flex items-start gap-1.5">
               <span>👉</span>
               <span>
                 <strong className="text-slate-100">আবেদনের শেষ তারিখঃ</strong>{' '}
@@ -168,9 +168,9 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
 
             {/* Description Breakdown Lines if provided */}
             {job.description && (
-              <div className="pt-3 border-t border-slate-900 space-y-2 text-slate-300">
+              <div className="pt-1.5 border-t border-slate-900 space-y-1 text-slate-300">
                 {job.description.split('\n').filter(Boolean).map((line, idx) => (
-                  <p key={idx} className="flex items-start gap-2">
+                  <p key={idx} className="flex items-start gap-1.5">
                     <span>👉</span>
                     <span>{line}</span>
                   </p>

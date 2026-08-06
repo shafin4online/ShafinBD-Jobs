@@ -51,8 +51,8 @@ export const JobForm: React.FC<JobFormProps> = ({
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const fileList = Array.from(files);
-    const validFiles = fileList.filter((f) => {
+    const fileList: File[] = Array.from(files);
+    const validFiles = fileList.filter((f: File) => {
       if (f.size > 5 * 1024 * 1024) {
         alert(`"${f.name}" ফাইলের সাইজ সর্বাধিক ৫ MB হওয়া আবশ্যক!`);
         return false;
