@@ -15,6 +15,7 @@ import { Footer } from './components/Footer';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { NotificationPermissionModal } from './components/NotificationPermissionModal';
 import { setupPushBroadcastListener } from './lib/pushNotification';
+import { parseToDate } from './context/jobLifecycle';
 import { LoginRequiredCard } from './components/LoginRequiredCard';
 import { MobileFilterModal } from './components/MobileFilterModal';
 
@@ -124,22 +125,27 @@ const MainContent: React.FC = () => {
     return true;
   });
 
-  // Sort jobs strictly by application deadline (ending soonest at top)
+  // Sort jobs: Active/running jobs first (ending soonest at top), Inactive/expired jobs at the bottom (most recently updated/posted first)
   const sortedJobs = [...filteredJobs].sort((a, b) => {
     const now = new Date().getTime();
-    const timeA = a.deadline ? new Date(a.deadline).getTime() : 0;
-    const timeB = b.deadline ? new Date(b.deadline).getTime() : 0;
+    const dateA = parseToDate(a.deadline);
+    const dateB = parseToDate(b.deadline);
+    const timeA = dateA ? dateA.getTime() : 0;
+    const timeB = dateB ? dateB.getTime() : 0;
 
-    const isExpiredA = timeA - now <= 0 || a.status === 'closed';
-    const isExpiredB = timeB - now <= 0 || b.status === 'closed';
+    const isExpiredA = (timeA > 0 && timeA - now <= 0) || a.status === 'closed';
+    const isExpiredB = (timeB > 0 && timeB - now <= 0) || b.status === 'closed';
 
     if (!isExpiredA && !isExpiredB) {
-      return timeA - timeB; // Soonest deadline first
+      return (timeA || Infinity) - (timeB || Infinity); // Active: Soonest deadline first
     }
     if (isExpiredA && isExpiredB) {
-      return timeB - timeA; // Most recently expired first
+      // Both inactive/expired: Most recently updated/posted first
+      const updatedA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const updatedB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return updatedB - updatedA;
     }
-    return isExpiredA ? 1 : -1; // Active jobs first
+    return isExpiredA ? 1 : -1; // Active jobs first, Inactive/Closed jobs at bottom
   });
 
   // Reset visible count when filters or active tab change

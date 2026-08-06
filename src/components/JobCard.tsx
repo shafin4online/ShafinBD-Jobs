@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Job } from '../types';
 import { useJobContext } from '../context/JobContext';
+import { parseToDate } from '../context/jobLifecycle';
 import { Building2, Hourglass, Calendar } from 'lucide-react';
 
 interface JobCardProps {
@@ -17,8 +18,8 @@ const toBnNumber = (num: number | string): string => {
 const formatDeadlineDate = (dateStr: string, lang: string): string => {
   if (!dateStr) return 'N/A';
   try {
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return dateStr;
+    const date = parseToDate(dateStr);
+    if (!date || isNaN(date.getTime())) return dateStr;
 
     const enMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const bnMonths = [
@@ -58,9 +59,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
         return;
       }
 
-      const deadlineDate = new Date(job.deadline);
-      // End of deadline day (23:59:59)
-      deadlineDate.setHours(23, 59, 59, 999);
+      const deadlineDate = parseToDate(job.deadline);
+      if (!deadlineDate) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: false });
+        return;
+      }
+
       const now = new Date().getTime();
       const diff = deadlineDate.getTime() - now;
 
