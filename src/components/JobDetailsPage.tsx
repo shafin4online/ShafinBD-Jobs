@@ -83,93 +83,120 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
           {/* Informational Details Section with Finger Point Emojis (👉) & Flags - Minimal Padding & Compact Spacing */}
           <div className="bg-slate-950/90 rounded-xl p-3 sm:p-4 border border-slate-900 space-y-1 sm:space-y-1.5 text-xs sm:text-sm leading-tight text-slate-200 font-medium w-full">
             
-            <p className="flex items-start gap-1.5">
-              <span>👉</span>
-              <span>
-                <strong className="text-slate-100">Deadline :</strong>{' '}
-                <span className="text-amber-300 font-bold">{job.deadline}</span>
-              </span>
-            </p>
-
-            <p className="flex items-start gap-1.5">
-              <span>👉</span>
-              <span>
-                <strong className="text-slate-100">আবেদন শুরুঃ</strong>{' '}
-                <span className="text-emerald-400 font-bold">{job.startDate || 'বিজ্ঞপ্তি প্রকাশিত'}</span>
-              </span>
-            </p>
-
+            {/* Header Banner */}
             <div className="py-1 my-0.5 text-center text-sm sm:text-base font-bold text-slate-100 flex items-center justify-center gap-2">
               <span>🇧🇩</span>
               <span className="text-sky-300 border-b border-sky-500/40 pb-0.5">নিয়োগ বিজ্ঞপ্তি</span>
               <span>🇧🇩</span>
             </div>
 
-            <p className="flex items-start gap-1.5">
-              <span>👉</span>
-              <span>
-                <strong className="text-slate-100">প্রতিষ্ঠানঃ</strong> {job.company}
-              </span>
-            </p>
+            {/* Company / Institution */}
+            {job.company && job.company.trim() && (
+              <p className="flex items-start gap-1.5">
+                <span>👉</span>
+                <span>
+                  <strong className="text-slate-100">প্রতিষ্ঠানঃ</strong> {job.company.trim()}
+                </span>
+              </p>
+            )}
 
-            <p className="flex items-start gap-1.5">
-              <span>👉</span>
-              <span>
-                <strong className="text-slate-100">পদের নামঃ</strong> {job.position || job.title}
-              </span>
-            </p>
+            {/* Position */}
+            {job.position && job.position.trim() && (
+              <p className="flex items-start gap-1.5">
+                <span>👉</span>
+                <span>
+                  <strong className="text-slate-100">পদের নামঃ</strong> {job.position.trim()}
+                </span>
+              </p>
+            )}
 
-            <p className="flex items-start gap-1.5">
-              <span>👉</span>
-              <span>
-                <strong className="text-slate-100">পদ সংখ্যাঃ</strong>{' '}
-                <span className="text-emerald-400 font-bold">{job.vacancies || 'বিজ্ঞপ্তিতে উল্লিখিত'}</span>
-              </span>
-            </p>
+            {/* Vacancies */}
+            {job.vacancies && job.vacancies.trim() && (
+              <p className="flex items-start gap-1.5">
+                <span>👉</span>
+                <span>
+                  <strong className="text-slate-100">পদ সংখ্যাঃ</strong>{' '}
+                  <span className="text-emerald-400 font-bold">{job.vacancies.trim()}</span>
+                </span>
+              </p>
+            )}
 
-            <p className="flex items-start gap-1.5">
-              <span>👉</span>
-              <span>
-                <strong className="text-slate-100">আবেদন ফিঃ</strong> {job.applicationFee || 'বিজ্ঞপ্তি অনুযায়ী'}
-              </span>
-            </p>
+            {/* Application Fee */}
+            {job.applicationFee && job.applicationFee.trim() && (
+              <p className="flex items-start gap-1.5">
+                <span>👉</span>
+                <span>
+                  <strong className="text-slate-100">আবেদন ফিঃ</strong> {job.applicationFee.trim()}
+                </span>
+              </p>
+            )}
 
-            <p className="flex items-start gap-1.5">
-              <span>👉</span>
-              <span>
-                <strong className="text-slate-100">আবেদন শুরুঃ</strong> {job.startDate || 'বিজ্ঞপ্তি প্রকাশিত'}
-              </span>
-            </p>
+            {/* Start Date */}
+            {job.startDate && job.startDate.trim() && (
+              <p className="flex items-start gap-1.5">
+                <span>👉</span>
+                <span>
+                  <strong className="text-slate-100">আবেদন শুরুঃ</strong>{' '}
+                  <span className="text-emerald-400 font-bold">{job.startDate.trim()}</span>
+                </span>
+              </p>
+            )}
 
-            {job.applicationUrl && (
+            {/* Application Link */}
+            {job.applicationUrl && job.applicationUrl.trim() && (
               <p className="flex items-start gap-1.5 break-all">
                 <span>👉</span>
                 <span>
                   <strong className="text-slate-100">আবেদনের লিংকঃ</strong>{' '}
                   <a
-                    href={job.applicationUrl}
+                    href={job.applicationUrl.trim()}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sky-400 hover:underline font-semibold"
                   >
-                    {job.applicationUrl}
+                    {job.applicationUrl.trim()}
                   </a>
                 </span>
               </p>
             )}
 
-            <p className="flex items-start gap-1.5">
-              <span>👉</span>
-              <span>
-                <strong className="text-slate-100">আবেদনের শেষ তারিখঃ</strong>{' '}
-                <span className="text-rose-400 font-bold">{job.deadline}</span>
-              </span>
-            </p>
+            {/* Deadline */}
+            {job.deadline && job.deadline.trim() && (
+              <p className="flex items-start gap-1.5">
+                <span>👉</span>
+                <span>
+                  <strong className="text-slate-100">আবেদনের শেষ তারিখঃ</strong>{' '}
+                  <span className="text-rose-400 font-bold">{job.deadline.trim()}</span>
+                </span>
+              </p>
+            )}
+
+            {/* Exam Date if present */}
+            {job.examDate && job.examDate.trim() && (
+              <p className="flex items-start gap-1.5">
+                <span>👉</span>
+                <span>
+                  <strong className="text-slate-100">পরীক্ষার তারিখঃ</strong>{' '}
+                  <span className="text-amber-300 font-bold">{job.examDate.trim()}</span>
+                </span>
+              </p>
+            )}
+
+            {/* Result Date if present */}
+            {job.resultDate && job.resultDate.trim() && (
+              <p className="flex items-start gap-1.5">
+                <span>👉</span>
+                <span>
+                  <strong className="text-slate-100">ফলাফল প্রকাশের তারিখঃ</strong>{' '}
+                  <span className="text-emerald-400 font-bold">{job.resultDate.trim()}</span>
+                </span>
+              </p>
+            )}
 
             {/* Description Breakdown Lines if provided */}
-            {job.description && (
+            {job.description && job.description.trim() && (
               <div className="pt-1.5 border-t border-slate-900 space-y-1 text-slate-300">
-                {job.description.split('\n').filter(Boolean).map((line, idx) => (
+                {job.description.trim().split('\n').filter(Boolean).map((line, idx) => (
                   <p key={idx} className="flex items-start gap-1.5">
                     <span>👉</span>
                     <span>{line}</span>
@@ -179,11 +206,11 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
             )}
           </div>
 
-          {/* Big Bright Blue Button: "সম্পূর্ণ নিয়োগ বিজ্ঞপ্তি" */}
-          <div className="flex justify-center pt-2">
-            {(job.circularUrl || job.applicationUrl) ? (
+          {/* Big Bright Blue Button: "সম্পূর্ণ নিয়োগ বিজ্ঞপ্তি" - ONLY shown if a link exists */}
+          {(job.circularUrl?.trim() || job.applicationUrl?.trim()) && (
+            <div className="flex justify-center pt-2">
               <a
-                href={job.circularUrl || job.applicationUrl}
+                href={(job.circularUrl?.trim() || job.applicationUrl?.trim())}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-extrabold text-base sm:text-lg rounded-2xl shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
@@ -191,15 +218,8 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
                 <span>সম্পূর্ণ নিয়োগ বিজ্ঞপ্তি</span>
                 <ExternalLink className="w-5 h-5" />
               </a>
-            ) : (
-              <a
-                href="#circular-image"
-                className="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-extrabold text-base sm:text-lg rounded-2xl shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
-              >
-                <span>সম্পূর্ণ নিয়োগ বিজ্ঞপ্তি</span>
-              </a>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Official Circular Notice Image Section */}
           <div id="circular-image" className="pt-4 space-y-4 w-full">

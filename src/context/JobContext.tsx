@@ -442,10 +442,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Actions
-  const addJob = (jobData: Omit<Job, 'id' | 'createdAt' | 'applicantCount'>) => {
+  const addJob = async (jobData: Omit<Job, 'id' | 'createdAt' | 'applicantCount'>): Promise<Job> => {
     const newJob = createNewJobObject(jobData);
     setJobs((prev) => [newJob, ...prev]);
-    saveJobToFirestore(newJob);
+    await saveJobToFirestore(newJob);
 
     // Broadcast push notification to user devices
     triggerPushBroadcast({
@@ -454,11 +454,14 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       jobCategory: jobData.category,
       url: '/'
     });
+
+    return newJob;
   };
 
-  const updateJob = (updatedJob: Job) => {
+  const updateJob = async (updatedJob: Job): Promise<Job> => {
     setJobs((prev) => prev.map((j) => (j.id === updatedJob.id ? updatedJob : j)));
-    saveJobToFirestore(updatedJob);
+    await saveJobToFirestore(updatedJob);
+    return updatedJob;
   };
 
   const deleteJob = (jobId: string) => {

@@ -44,8 +44,8 @@ export interface JobContextType {
   registerWithEmail: (email: string, pass: string, name: string) => Promise<void>;
   directProfileLogin: (email: string, name: string) => void;
   logoutUser: () => Promise<void>;
-  addJob: (job: Omit<Job, 'id' | 'createdAt' | 'applicantCount'>) => void;
-  updateJob: (job: Job) => void;
+  addJob: (job: Omit<Job, 'id' | 'createdAt' | 'applicantCount'>) => Promise<Job>;
+  updateJob: (job: Job) => Promise<Job>;
   deleteJob: (jobId: string) => void;
   toggleJobStatus: (jobId: string) => void;
   toggleJobFeatured: (jobId: string) => void;

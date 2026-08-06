@@ -10,7 +10,13 @@ import {
   LayoutDashboard, 
   Users, 
   Bell, 
-  FolderKanban 
+  FolderKanban,
+  CheckCircle2,
+  Loader2,
+  CloudUpload,
+  ExternalLink,
+  X,
+  AlertTriangle
 } from 'lucide-react';
 import { JobForm } from './admin/JobForm';
 import { AdminJobsTable } from './admin/AdminJobsTable';
@@ -168,6 +174,16 @@ export const AdminPanel: React.FC = () => {
   const [aiNotice, setAiNotice] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
 
+  const [publishingModal, setPublishingModal] = useState<{
+    isOpen: boolean;
+    step: 'preparing' | 'saving_cloud' | 'broadcasting' | 'success' | 'error';
+    jobId?: string;
+    error?: string;
+  }>({
+    isOpen: false,
+    step: 'preparing',
+  });
+
   const handleAiGenerate = async () => {
     if (!jobForm.title) {
       alert('প্রথমে জবের টাইটেল লিখুন!');
@@ -209,121 +225,164 @@ export const AdminPanel: React.FC = () => {
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const requirements = (jobForm.requirementsText || '')
-      .split('\n')
-      .map((s) => s.replace(/^[•\-\*]\s*/, '').trim())
-      .filter(Boolean);
-
-    const responsibilities = (jobForm.responsibilitiesText || '')
-      .split('\n')
-      .map((s) => s.replace(/^[•\-\*]\s*/, '').trim())
-      .filter(Boolean);
-
-    const imageUrlsList =
-      jobForm.imageUrls && Array.isArray(jobForm.imageUrls) && jobForm.imageUrls.length > 0
-        ? jobForm.imageUrls
-        : jobForm.imageUrl
-        ? [jobForm.imageUrl]
-        : [];
-
-    const payload = {
-      title: jobForm.title,
-      company: jobForm.company || 'Shafin BD Jobs',
-      companyLogo: jobForm.companyLogo || imageUrlsList[0] || jobForm.imageUrl || '',
-      location: jobForm.location || 'বাংলাদেশ',
-      jobType: jobForm.jobType || 'Full-time',
-      category: jobForm.category || 'Govt. Job',
-      salaryRange: jobForm.salaryRange || 'আলোচনা সাপেক্ষে',
-      experienceLevel: jobForm.experienceLevel || 'Entry Level',
-      description: jobForm.description || '',
-      requirements,
-      responsibilities,
-      deadline: jobForm.deadline || new Date().toISOString().split('T')[0],
-      status: jobForm.status || 'active',
-      featured: jobForm.featured,
-
-      // Extended Fields
-      postType: jobForm.postType || 'govt',
-      startDate: jobForm.startDate || '',
-      position: jobForm.position || '',
-      vacancies: jobForm.vacancies || '',
-      applicationFee: jobForm.applicationFee || '',
-      applicationUrl: jobForm.applicationUrl || '',
-      circularUrl: jobForm.circularUrl || '',
-      resultDate: jobForm.resultDate || '',
-      examDate: jobForm.examDate || '',
-      passedCount: jobForm.passedCount || '',
-      writtenExamDate: jobForm.writtenExamDate || '',
-      imageUrl: imageUrlsList[0] || jobForm.imageUrl || '',
-      imageUrls: imageUrlsList,
-    };
-
-    // Auto-save institute logo into gallery for future reuse
-    if (jobForm.company && jobForm.companyLogo) {
-      try {
-        const stored = localStorage.getItem('SAVED_INSTITUTE_LOGOS_GALLERY');
-        const list = stored ? JSON.parse(stored) : [];
-        const nameKey = jobForm.company.trim().toLowerCase();
-        const exists = list.some((item: any) => item.name.trim().toLowerCase() === nameKey);
-        if (!exists) {
-          list.unshift({
-            id: `custom-logo-${Date.now()}`,
-            name: jobForm.company.trim(),
-            logoUrl: jobForm.companyLogo,
-          });
-          localStorage.setItem('SAVED_INSTITUTE_LOGOS_GALLERY', JSON.stringify(list));
-        }
-      } catch (e) {
-        console.error('Failed to update saved institute logos gallery:', e);
-      }
+    if (!jobForm.title || !jobForm.title.trim()) {
+      alert('দয়া করে জবের শিরোনাম (Title) লিখুন!');
+      return;
     }
 
-    if (editingJob) {
-      updateJob({
-        ...editingJob,
-        ...payload,
-      });
-      setFormSuccess('পোস্টের তথ্য সফলভাবে আপডেট করা হয়েছে!');
-      setEditingJob(null);
-    } else {
-      addJob(payload);
-      setFormSuccess('নতুন পোস্ট সফলভাবে লাইভ প্রকাশিত হয়েছে!');
-    }
-
-    setJobForm({
-      postType: 'govt',
-      title: '',
-      company: '',
-      companyLogo: '',
-      location: 'বাংলাদেশ (Bangladesh)',
-      jobType: 'Full-time',
-      category: 'Govt. Job',
-      salaryRange: 'আলোচনা সাপেক্ষে',
-      experienceLevel: 'Entry Level',
-      description: '',
-      requirementsText: '',
-      responsibilitiesText: '',
-      deadline: '',
-      startDate: '',
-      position: '',
-      vacancies: '',
-      applicationFee: '',
-      applicationUrl: '',
-      circularUrl: '',
-      resultDate: '',
-      examDate: '',
-      passedCount: '',
-      writtenExamDate: '',
-      imageUrl: '',
-      imageUrls: [],
-      status: 'active',
-      featured: true,
+    // Open Real-time Publishing Modal
+    setPublishingModal({
+      isOpen: true,
+      step: 'preparing',
     });
 
-    setTimeout(() => setFormSuccess(''), 4000);
+    try {
+      const requirements = (jobForm.requirementsText || '')
+        .split('\n')
+        .map((s) => s.replace(/^[•\-\*]\s*/, '').trim())
+        .filter(Boolean);
+
+      const responsibilities = (jobForm.responsibilitiesText || '')
+        .split('\n')
+        .map((s) => s.replace(/^[•\-\*]\s*/, '').trim())
+        .filter(Boolean);
+
+      const imageUrlsList =
+        jobForm.imageUrls && Array.isArray(jobForm.imageUrls) && jobForm.imageUrls.length > 0
+          ? jobForm.imageUrls
+          : jobForm.imageUrl
+          ? [jobForm.imageUrl]
+          : [];
+
+      const payload = {
+        title: jobForm.title.trim(),
+        company: jobForm.company || 'Shafin BD Jobs',
+        companyLogo: jobForm.companyLogo || imageUrlsList[0] || jobForm.imageUrl || '',
+        location: jobForm.location || 'বাংলাদেশ',
+        jobType: jobForm.jobType || 'Full-time',
+        category: jobForm.category || 'Govt. Job',
+        salaryRange: jobForm.salaryRange || 'আলোচনা সাপেক্ষে',
+        experienceLevel: jobForm.experienceLevel || 'Entry Level',
+        description: jobForm.description || '',
+        requirements,
+        responsibilities,
+        deadline: jobForm.deadline || new Date().toISOString().split('T')[0],
+        status: jobForm.status || 'active',
+        featured: jobForm.featured,
+
+        // Extended Fields
+        postType: jobForm.postType || 'govt',
+        startDate: jobForm.startDate || '',
+        position: jobForm.position || '',
+        vacancies: jobForm.vacancies || '',
+        applicationFee: jobForm.applicationFee || '',
+        applicationUrl: jobForm.applicationUrl || '',
+        circularUrl: jobForm.circularUrl || '',
+        resultDate: jobForm.resultDate || '',
+        examDate: jobForm.examDate || '',
+        passedCount: jobForm.passedCount || '',
+        writtenExamDate: jobForm.writtenExamDate || '',
+        imageUrl: imageUrlsList[0] || jobForm.imageUrl || '',
+        imageUrls: imageUrlsList,
+      };
+
+      // Auto-save institute logo into gallery for future reuse
+      if (jobForm.company && jobForm.companyLogo) {
+        try {
+          const stored = localStorage.getItem('SAVED_INSTITUTE_LOGOS_GALLERY');
+          const list = stored ? JSON.parse(stored) : [];
+          const nameKey = jobForm.company.trim().toLowerCase();
+          const exists = list.some((item: any) => item.name.trim().toLowerCase() === nameKey);
+          if (!exists) {
+            list.unshift({
+              id: `custom-logo-${Date.now()}`,
+              name: jobForm.company.trim(),
+              logoUrl: jobForm.companyLogo,
+            });
+            localStorage.setItem('SAVED_INSTITUTE_LOGOS_GALLERY', JSON.stringify(list));
+          }
+        } catch (e) {
+          console.error('Failed to update saved institute logos gallery:', e);
+        }
+      }
+
+      // Step 2: Saving to Firebase Cloud Firestore
+      setPublishingModal({
+        isOpen: true,
+        step: 'saving_cloud',
+      });
+
+      let savedResult: Job;
+      if (editingJob) {
+        savedResult = await updateJob({
+          ...editingJob,
+          ...payload,
+        });
+        setFormSuccess('পোস্টের তথ্য সফলভাবে আপডেট করা হয়েছে!');
+      } else {
+        savedResult = await addJob(payload);
+        setFormSuccess('নতুন পোস্ট সফলভাবে লাইভ প্রকাশিত হয়েছে!');
+      }
+
+      // Step 3: Broadcasting Push
+      setPublishingModal({
+        isOpen: true,
+        step: 'broadcasting',
+        jobId: savedResult.id,
+      });
+
+      await new Promise((res) => setTimeout(res, 600));
+
+      // Step 4: Success Feedback
+      setPublishingModal({
+        isOpen: true,
+        step: 'success',
+        jobId: savedResult.id,
+      });
+
+      setEditingJob(null);
+      setJobForm({
+        postType: 'govt',
+        title: '',
+        company: '',
+        companyLogo: '',
+        location: 'বাংলাদেশ (Bangladesh)',
+        jobType: 'Full-time',
+        category: 'Govt. Job',
+        salaryRange: 'আলোচনা সাপেক্ষে',
+        experienceLevel: 'Entry Level',
+        description: '',
+        requirementsText: '',
+        responsibilitiesText: '',
+        deadline: '',
+        startDate: '',
+        position: '',
+        vacancies: '',
+        applicationFee: '',
+        applicationUrl: '',
+        circularUrl: '',
+        resultDate: '',
+        examDate: '',
+        passedCount: '',
+        writtenExamDate: '',
+        imageUrl: '',
+        imageUrls: [],
+        status: 'active',
+        featured: true,
+      });
+
+      setTimeout(() => setFormSuccess(''), 4000);
+    } catch (err: any) {
+      console.error('Error publishing job:', err);
+      setPublishingModal({
+        isOpen: true,
+        step: 'error',
+        error: err?.message || 'ক্লাউডে সেভ করার সময় একটি ত্রুটি ঘটেছে।',
+      });
+    }
   };
 
   const startEditJob = (job: Job) => {
@@ -472,6 +531,111 @@ export const AdminPanel: React.FC = () => {
           applications={applications}
           updateApplicationStatus={updateApplicationStatus}
         />
+      )}
+
+      {/* Real-time Publishing Progress & Cloud Feedback Modal */}
+      {publishingModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-5 text-slate-100 relative">
+            <button
+              onClick={() => setPublishingModal({ isOpen: false, step: 'preparing' })}
+              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
+              <div className="p-2.5 bg-sky-500/10 text-sky-400 rounded-xl border border-sky-500/20">
+                <CloudUpload className="w-6 h-6 animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-white">লাইভ পাবলিশিং প্রসেস</h3>
+                <p className="text-xs text-slate-400">Real-Time Cloud Firestore Sync & Broadcast</p>
+              </div>
+            </div>
+
+            {/* Steps Progress Checklist */}
+            <div className="space-y-3 text-xs font-semibold">
+              {/* Step 1: Data Formatting */}
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span className="text-slate-200">১. পোস্টের তথ্য প্রসেস ও ফরম্যাট করা হয়েছে</span>
+              </div>
+
+              {/* Step 2: Saving to Cloud Firestore */}
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                {publishingModal.step === 'preparing' || publishingModal.step === 'saving_cloud' ? (
+                  <Loader2 className="w-5 h-5 text-sky-400 animate-spin shrink-0" />
+                ) : (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                )}
+                <div className="flex-1">
+                  <span className={publishingModal.step === 'saving_cloud' ? 'text-sky-300 font-bold' : 'text-slate-200'}>
+                    ২. Firebase Cloud Firestore এ সেভ হচ্ছে...
+                  </span>
+                  {publishingModal.jobId && (
+                    <span className="block text-[10px] text-emerald-400 font-mono mt-0.5">
+                      ✓ ক্লাউডে সফলভাবে সেভ হয়েছে! (ID: {publishingModal.jobId})
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Step 3: FCM Push Broadcast */}
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                {publishingModal.step === 'broadcasting' ? (
+                  <Loader2 className="w-5 h-5 text-amber-400 animate-spin shrink-0" />
+                ) : publishingModal.step === 'success' ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                ) : (
+                  <div className="w-5 h-5 rounded-full border-2 border-slate-700 shrink-0" />
+                )}
+                <span className={publishingModal.step === 'broadcasting' ? 'text-amber-300 font-bold' : 'text-slate-300'}>
+                  ৩. পুশ নোটিফিকেশন এলার্ট ইউজারদের ডিভাইসে ব্রডকাস্ট হচ্ছে
+                </span>
+              </div>
+            </div>
+
+            {/* Error Feedback */}
+            {publishingModal.step === 'error' && (
+              <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-start gap-2 text-rose-300 text-xs font-bold">
+                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <span>{publishingModal.error || 'ক্লাউডে সেভ করার সময় ত্রুটি ঘটেছে।'}</span>
+              </div>
+            )}
+
+            {/* Success Feedback Banner */}
+            {publishingModal.step === 'success' && (
+              <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl space-y-1 text-center animate-fadeIn">
+                <p className="text-xs font-extrabold text-emerald-400">🎉 পোস্টটি সফলভাবে ক্লাউডে সেভ ও লাইভ পাবলিশ হয়েছে!</p>
+                <p className="text-[11px] text-slate-300">সকল ইউজার তাৎক্ষণিকভাবে জবের আপডেট দেখতে পাবেন।</p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+              {publishingModal.step === 'success' && publishingModal.jobId && (
+                <button
+                  onClick={() => {
+                    const targetId = publishingModal.jobId;
+                    setPublishingModal({ isOpen: false, step: 'preparing' });
+                    window.location.hash = `#/job/${targetId}`;
+                  }}
+                  className="flex-1 py-2.5 bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-sky-600/20"
+                >
+                  <span>পোস্ট দেখুন (View Post)</span>
+                  <ExternalLink className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={() => setPublishingModal({ isOpen: false, step: 'preparing' })}
+                className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition-all cursor-pointer border border-slate-700 text-center"
+              >
+                {publishingModal.step === 'success' ? 'ঠিক আছে (Dismiss)' : 'বন্ধ করুন'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
