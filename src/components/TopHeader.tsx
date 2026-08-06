@@ -7,9 +7,10 @@ import { APP_LOGO_URL } from '../constants';
 interface TopHeaderProps {
   onToggleSidebar: () => void;
   onOpenMobileFilter?: () => void;
+  hideMobileSubNav?: boolean;
 }
 
-export const TopHeader: React.FC<TopHeaderProps> = ({ onToggleSidebar, onOpenMobileFilter }) => {
+export const TopHeader: React.FC<TopHeaderProps> = ({ onToggleSidebar, onOpenMobileFilter, hideMobileSubNav = false }) => {
   const { 
     authUser, 
     profile, 
@@ -63,7 +64,14 @@ export const TopHeader: React.FC<TopHeaderProps> = ({ onToggleSidebar, onOpenMob
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2.5">
+          <div 
+            onClick={() => {
+              window.location.hash = '';
+              setActiveTab('jobs');
+            }}
+            className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
+            title="Go to Home"
+          >
             <div className="w-10 h-10 flex items-center justify-center shrink-0 overflow-hidden">
               <img 
                 src={APP_LOGO_URL} 
@@ -250,51 +258,53 @@ export const TopHeader: React.FC<TopHeaderProps> = ({ onToggleSidebar, onOpenMob
       </div>
 
       {/* Fixed Mobile & PWA Quick Nav Strip */}
-      <div className="lg:hidden border-t border-slate-300 dark:border-slate-800 bg-slate-400 dark:bg-slate-800 shadow-xs">
-        <div className="grid grid-cols-4 gap-px bg-slate-400 dark:bg-slate-700">
-          <button
-            onClick={() => setActiveTab('govt-jobs')}
-            className={`py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight transition-all cursor-pointer flex items-center justify-center leading-tight select-none ${
-              activeTab === 'govt-jobs'
-                ? 'bg-[#6093cd] text-slate-950 font-black shadow-inner border-b-2 border-slate-900 dark:border-slate-100'
-                : 'bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700'
-            }`}
-          >
-            <span>সরকারি চাকুরী</span>
-          </button>
+      {!hideMobileSubNav && (
+        <div className="lg:hidden border-t border-slate-300 dark:border-slate-800 bg-slate-400 dark:bg-slate-800 shadow-xs">
+          <div className="grid grid-cols-4 gap-px bg-slate-400 dark:bg-slate-700">
+            <button
+              onClick={() => setActiveTab('govt-jobs')}
+              className={`py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight transition-all cursor-pointer flex items-center justify-center leading-tight select-none ${
+                activeTab === 'govt-jobs'
+                  ? 'bg-[#6093cd] text-slate-950 font-black shadow-inner border-b-2 border-slate-900 dark:border-slate-100'
+                  : 'bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700'
+              }`}
+            >
+              <span>সরকারি চাকুরী</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTab('private-jobs')}
-            className={`py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight transition-all cursor-pointer flex items-center justify-center leading-tight select-none ${
-              activeTab === 'private-jobs'
-                ? 'bg-[#6093cd] text-slate-950 font-black shadow-inner border-b-2 border-slate-900 dark:border-slate-100'
-                : 'bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700'
-            }`}
-          >
-            <span>বেসরকারি চাকুরী</span>
-          </button>
+            <button
+              onClick={() => setActiveTab('private-jobs')}
+              className={`py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight transition-all cursor-pointer flex items-center justify-center leading-tight select-none ${
+                activeTab === 'private-jobs'
+                  ? 'bg-[#6093cd] text-slate-950 font-black shadow-inner border-b-2 border-slate-900 dark:border-slate-100'
+                  : 'bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700'
+              }`}
+            >
+              <span>বেসরকারি চাকুরী</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTab('exam-results')}
-            className={`py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight transition-all cursor-pointer flex items-center justify-center leading-tight select-none ${
-              activeTab === 'exam-results'
-                ? 'bg-[#6093cd] text-slate-950 font-black shadow-inner border-b-2 border-slate-900 dark:border-slate-100'
-                : 'bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700'
-            }`}
-          >
-            <span>ফলাফল</span>
-          </button>
+            <button
+              onClick={() => setActiveTab('exam-results')}
+              className={`py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight transition-all cursor-pointer flex items-center justify-center leading-tight select-none ${
+                activeTab === 'exam-results'
+                  ? 'bg-[#6093cd] text-slate-950 font-black shadow-inner border-b-2 border-slate-900 dark:border-slate-100'
+                  : 'bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700'
+              }`}
+            >
+              <span>ফলাফল</span>
+            </button>
 
-          <button
-            onClick={() => {
-              if (onOpenMobileFilter) onOpenMobileFilter();
-            }}
-            className="py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700 transition-all cursor-pointer flex items-center justify-center leading-tight select-none"
-          >
-            <span>ফিল্টার করুন</span>
-          </button>
+            <button
+              onClick={() => {
+                if (onOpenMobileFilter) onOpenMobileFilter();
+              }}
+              className="py-2.5 px-0.5 text-center font-extrabold text-[11px] sm:text-xs tracking-tight bg-[#a8cbf0] dark:bg-slate-800/95 text-slate-900 dark:text-slate-100 hover:bg-[#93bde8] dark:hover:bg-slate-700 transition-all cursor-pointer flex items-center justify-center leading-tight select-none"
+            >
+              <span>ফিল্টার করুন</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </header>
   );
 };

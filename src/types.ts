@@ -174,6 +174,7 @@ export interface FilterState {
   location: string;
   experienceLevel: string;
   salaryMin: number;
+  status: 'all' | 'active' | 'closed';
 }
 
 export type ActiveTab = 

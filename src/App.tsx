@@ -3,9 +3,8 @@ import { JobProvider, useJobContext, ADMIN_EMAILS } from './context/JobContext';
 import { Sidebar } from './components/Sidebar';
 import { AdminSidebar } from './components/AdminSidebar';
 import { TopHeader } from './components/TopHeader';
-import { JobCard } from './components/JobCard';
-import { JobFilter } from './components/JobFilter';
-import { JobDetailsModal } from './components/JobDetailsModal';
+import { JobBoardView } from './components/JobBoardView';
+import { JobDetailsPage } from './components/JobDetailsPage';
 import { UserProfile } from './components/UserProfile';
 import { AdminPanel } from './components/AdminPanel';
 import { StaticPages } from './components/pages/StaticPages';
@@ -15,21 +14,21 @@ import { AccountActivationModal } from './components/AccountActivationModal';
 import { Footer } from './components/Footer';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { NotificationPermissionModal } from './components/NotificationPermissionModal';
-import { Briefcase, Sparkles, AlertCircle, RotateCcw, Filter, ChevronDown, ChevronUp, Loader2, X, UserCheck, User as UserIcon, FileText } from 'lucide-react';
-import { t } from './translations';
+import { LoginRequiredCard } from './components/LoginRequiredCard';
+import { MobileFilterModal } from './components/MobileFilterModal';
 
 const MainContent: React.FC = () => {
   const { 
     activeTab, 
     jobs, 
     filters, 
-    resetFilters, 
     showAuthModal, 
     setShowAuthModal,
     showActivationModal,
     setShowActivationModal,
-    lang,
-    authUser
+    authUser,
+    selectedJobForModal,
+    setSelectedJobForModal
   } = useJobContext();
 
   const userEmail = authUser?.email ? authUser.email.trim().toLowerCase() : '';
@@ -39,13 +38,37 @@ const MainContent: React.FC = () => {
   const [filterCollapsed, setFilterCollapsed] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
+  // Hash Route Listener for Job Details Page URL
+  const [currentHash, setCurrentHash] = useState(window.location.hash);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentHash(window.location.hash);
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   // Infinite Scroll State
   const [visibleCount, setVisibleCount] = useState(6);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const observerRef = useRef<HTMLDivElement | null>(null);
 
+  // Determine active job from URL hash or context selection
+  let currentJobFromHash = null;
+  if (currentHash.startsWith('#/job/')) {
+    const jobId = currentHash.replace('#/job/', '').split('?')[0];
+    currentJobFromHash = jobs.find((j) => j.id === jobId) || selectedJobForModal;
+  } else if (selectedJobForModal) {
+    currentJobFromHash = selectedJobForModal;
+  }
+
   // Filter logic
   const filteredJobs = jobs.filter((job) => {
+    // Active vs Inactive Status filter
+    if (filters.status === 'active' && job.status === 'closed') return false;
+    if (filters.status === 'closed' && job.status !== 'closed') return false;
+
     // Specific Nav Tab filtering
     if (activeTab === 'govt-jobs' && !job.category.toLowerCase().includes('govt')) return false;
     if (activeTab === 'private-jobs' && !job.category.toLowerCase().includes('private')) return false;
@@ -82,6 +105,24 @@ const MainContent: React.FC = () => {
     return true;
   });
 
+  // Sort jobs strictly by application deadline (ending soonest at top)
+  const sortedJobs = [...filteredJobs].sort((a, b) => {
+    const now = new Date().getTime();
+    const timeA = a.deadline ? new Date(a.deadline).getTime() : 0;
+    const timeB = b.deadline ? new Date(b.deadline).getTime() : 0;
+
+    const isExpiredA = timeA - now <= 0 || a.status === 'closed';
+    const isExpiredB = timeB - now <= 0 || b.status === 'closed';
+
+    if (!isExpiredA && !isExpiredB) {
+      return timeA - timeB; // Soonest deadline first
+    }
+    if (isExpiredA && isExpiredB) {
+      return timeB - timeA; // Most recently expired first
+    }
+    return isExpiredA ? 1 : -1; // Active jobs first
+  });
+
   // Reset visible count when filters or active tab change
   useEffect(() => {
     setVisibleCount(6);
@@ -91,7 +132,7 @@ const MainContent: React.FC = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && visibleCount < filteredJobs.length) {
+        if (entries[0].isIntersecting && visibleCount < sortedJobs.length) {
           setIsLoadingMore(true);
           setTimeout(() => {
             setVisibleCount((prev) => prev + 6);
@@ -107,24 +148,22 @@ const MainContent: React.FC = () => {
     }
 
     return () => observer.disconnect();
-  }, [visibleCount, filteredJobs.length]);
+  }, [visibleCount, sortedJobs.length]);
 
-  const displayedJobs = filteredJobs.slice(0, visibleCount);
-  const featuredJobs = displayedJobs.filter((j) => j.featured && j.status === 'active');
-  const regularJobs = displayedJobs.filter((j) => !j.featured || j.status !== 'active');
+  const displayedJobs = sortedJobs.slice(0, visibleCount);
 
-  const getSectionTitle = () => {
-    switch (activeTab) {
-      case 'govt-jobs':
-        return t('govtTitle', lang);
-      case 'private-jobs':
-        return t('privateTitle', lang);
-      case 'university-admission':
-        return t('univTitle', lang);
-      default:
-        return t('allCircularsTitle', lang);
-    }
-  };
+  // If a job page URL or selected job is active, render full-screen Job Details Page
+  if (currentJobFromHash) {
+    return (
+      <JobDetailsPage
+        job={currentJobFromHash}
+        onBack={() => {
+          window.location.hash = '';
+          setSelectedJobForModal(null);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100/70 text-slate-800 flex flex-col">
@@ -143,126 +182,18 @@ const MainContent: React.FC = () => {
         />
 
         <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-6">
-          
           {/* JOBS BOARD / SPECIFIC CATEGORIES */}
           {['jobs', 'govt-jobs', 'private-jobs', 'university-admission'].includes(activeTab) && (
-            <div className="space-y-6">
-              {/* Collapsible Search & Filter Bar for Large Screens (Hidden on Mobile View) */}
-              <div className="hidden md:block bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-emerald-600" />
-                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                      {t('filterAndSearch', lang)} {filterCollapsed ? t('collapsed', lang) : t('expanded', lang)}
-                    </h3>
-                  </div>
-
-                  <button
-                    onClick={() => setFilterCollapsed(!filterCollapsed)}
-                    className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1 cursor-pointer transition-colors"
-                  >
-                    <span>{filterCollapsed ? t('showFilters', lang) : t('hideFilters', lang)}</span>
-                    {filterCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-                  </button>
-                </div>
-
-                {!filterCollapsed && <JobFilter />}
-              </div>
-
-              {/* Job List Content */}
-              <div className="space-y-6">
-                {/* Header Count Bar (Hidden on Mobile View) */}
-                <div className="hidden md:flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-                  <div>
-                    <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                      <Briefcase className="w-4 h-4 text-emerald-600" />
-                      <span>{getSectionTitle()}</span>
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {t('totalText', lang)} <strong className="text-slate-900">{filteredJobs.length}</strong> {t('totalOpenings', lang)}
-                    </p>
-                  </div>
-
-                  {(filters.category !== 'All' || filters.searchKeyword !== '' || filters.jobType !== 'All') && (
-                    <button
-                      onClick={resetFilters}
-                      className="text-xs font-bold text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      <span>{t('resetFilters', lang)}</span>
-                    </button>
-                  )}
-                </div>
-
-                {filteredJobs.length === 0 ? (
-                  <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-xs space-y-3">
-                    <AlertCircle className="w-12 h-12 text-slate-300 mx-auto" />
-                    <h3 className="text-base font-bold text-slate-800">{t('noJobsFound', lang)}</h3>
-                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                      {t('noJobsSub', lang)}
-                    </p>
-                    <button
-                      onClick={resetFilters}
-                      className="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer"
-                    >
-                      {t('resetAllFilters', lang)}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {/* Featured Openings Grid */}
-                    {featuredJobs.length > 0 && (
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
-                          <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-                            {t('urgentFeatured', lang)}
-                          </h3>
-                        </div>
-
-                        {/* Responsive 3-Column / 2-Column / 1-Column Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {featuredJobs.map((job) => (
-                            <JobCard key={job.id} job={job} />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Regular / All Listings Grid */}
-                    {regularJobs.length > 0 && (
-                      <div className="space-y-3">
-                        {featuredJobs.length > 0 && (
-                          <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider pt-2">
-                            {t('allOtherOpenings', lang)}
-                          </h3>
-                        )}
-
-                        {/* Responsive 3-Column / 2-Column / 1-Column Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {regularJobs.map((job) => (
-                            <JobCard key={job.id} job={job} />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Infinite Scroll Load Trigger */}
-                    {visibleCount < filteredJobs.length && (
-                      <div ref={observerRef} className="text-center py-6">
-                        <button
-                          onClick={() => setVisibleCount((prev) => prev + 6)}
-                          className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-md inline-flex items-center gap-2 transition-all cursor-pointer"
-                        >
-                          {isLoadingMore && <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />}
-                          <span>আরও পোস্ট লোড করুন (Infinite Scroll)</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+            <JobBoardView
+              sortedJobs={sortedJobs}
+              displayedJobs={displayedJobs}
+              visibleCount={visibleCount}
+              setVisibleCount={setVisibleCount}
+              isLoadingMore={isLoadingMore}
+              observerRef={observerRef}
+              filterCollapsed={filterCollapsed}
+              setFilterCollapsed={setFilterCollapsed}
+            />
           )}
 
           {/* TAB: EXAM RESULTS */}
@@ -273,22 +204,11 @@ const MainContent: React.FC = () => {
             authUser ? (
               <UserProfile />
             ) : (
-              <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border border-slate-200 shadow-xs space-y-4 max-w-md mx-auto my-8">
-                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
-                  <UserCheck className="w-8 h-8" />
-                </div>
-                <h3 className="text-base font-extrabold text-slate-800">লগইন প্রয়োজন (Login Required)</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  প্রার্থী প্রোফাইল দেখতে বা তৈরি করতে অনুগ্রহ করে সাইন ইন অথবা নতুন একাউন্ট রেজিস্ট্রেশন করুন।
-                </p>
-                <button
-                  onClick={() => setShowAuthModal(true)}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-colors cursor-pointer inline-flex items-center gap-2"
-                >
-                  <UserIcon className="w-4 h-4" />
-                  <span>সাইন ইন / রেজিস্ট্রেশন করুন</span>
-                </button>
-              </div>
+              <LoginRequiredCard
+                iconType="profile"
+                title="লগইন প্রয়োজন (Login Required)"
+                description="প্রার্থী প্রোফাইল দেখতে বা তৈরি করতে অনুগ্রহ করে সাইন ইন অথবা নতুন একাউন্ট রেজিস্ট্রেশন করুন।"
+              />
             )
           )}
 
@@ -297,22 +217,11 @@ const MainContent: React.FC = () => {
             authUser ? (
               <UserProfile />
             ) : (
-              <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border border-slate-200 shadow-xs space-y-4 max-w-md mx-auto my-8">
-                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
-                  <FileText className="w-8 h-8" />
-                </div>
-                <h3 className="text-base font-extrabold text-slate-800">লগইন প্রয়োজন (Login Required)</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  আপনার আবেদনের তালিকা ও বিবরণ দেখতে অনুগ্রহ করে সাইন ইন করুন।
-                </p>
-                <button
-                  onClick={() => setShowAuthModal(true)}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-colors cursor-pointer inline-flex items-center gap-2"
-                >
-                  <UserIcon className="w-4 h-4" />
-                  <span>সাইন ইন / রেজিস্ট্রেশন করুন</span>
-                </button>
-              </div>
+              <LoginRequiredCard
+                iconType="applications"
+                title="লগইন প্রয়োজন (Login Required)"
+                description="আপনার আবেদনের তালিকা ও বিবরণ দেখতে অনুগ্রহ করে সাইন ইন করুন।"
+              />
             )
           )}
 
@@ -323,50 +232,21 @@ const MainContent: React.FC = () => {
           {['privacy-policy', 'terms', 'about', 'contact'].includes(activeTab) && (
             <StaticPages type={activeTab as any} />
           )}
-
         </main>
 
         <Footer />
       </div>
 
-      <JobDetailsModal />
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
       <AccountActivationModal isOpen={showActivationModal} onClose={() => setShowActivationModal(false)} />
       <PWAInstallPrompt />
       <NotificationPermissionModal />
 
       {/* Mobile Filter Sheet Modal */}
-      {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/65 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-              <div className="flex items-center gap-2 font-extrabold text-slate-900 dark:text-slate-100 text-sm">
-                <Filter className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>ফিল্টার ও সার্চ অপশন (Job Search Filters)</span>
-              </div>
-              <button
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-4 overflow-y-auto flex-1">
-              <JobFilter />
-            </div>
-
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-              <button
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-md transition-colors cursor-pointer"
-              >
-                ফিল্টার প্রয়োগ করুন (Apply Filters)
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <MobileFilterModal
+        isOpen={isMobileFilterOpen}
+        onClose={() => setIsMobileFilterOpen(false)}
+      />
     </div>
   );
 };

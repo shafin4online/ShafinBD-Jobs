@@ -76,6 +76,7 @@ export const DEFAULT_FILTERS: FilterState = {
   location: 'All',
   experienceLevel: 'All',
   salaryMin: 0,
+  status: 'all',
 };
 
 export const LOCAL_STORAGE_KEYS = {

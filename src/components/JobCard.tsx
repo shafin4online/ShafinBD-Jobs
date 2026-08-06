@@ -1,159 +1,148 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Job } from '../types';
 import { useJobContext } from '../context/JobContext';
-import { t } from '../translations';
-import {
-  MapPin,
-  Clock,
-  Banknote,
-  Bookmark,
-  Sparkles,
-  Building2,
-  ChevronRight,
-  CheckCircle2
-} from 'lucide-react';
+import { Building2, Hourglass, Calendar } from 'lucide-react';
 
 interface JobCardProps {
   job: Job;
 }
 
+// Convert English numbers to Bengali numerals
+const toBnNumber = (num: number | string): string => {
+  const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  return String(num).replace(/[0-9]/g, (digit) => bnDigits[parseInt(digit, 10)]);
+};
+
+// Format English date to English/Bengali date badge
+const formatDeadlineDate = (dateStr: string, lang: string): string => {
+  if (!dateStr) return 'N/A';
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+
+    const enMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const bnMonths = [
+      'জানুয়ারী', 'ফেব্রুয়ারী', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+      'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+    ];
+
+    if (lang === 'EN') {
+      return `${date.getDate()} ${enMonths[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    const day = toBnNumber(date.getDate());
+    const month = bnMonths[date.getMonth()];
+    const year = toBnNumber(date.getFullYear());
+    return `${day} ${month} ${year}`;
+  } catch {
+    return dateStr;
+  }
+};
+
 export const JobCard: React.FC<JobCardProps> = ({ job }) => {
-  const { profile, toggleSaveJob, setSelectedJobForModal, applications, lang } = useJobContext();
+  const { setSelectedJobForModal, lang } = useJobContext();
 
-  const isSaved = (profile?.savedJobs || []).includes(job.id);
-  const hasApplied = (applications || []).some((a) => a.jobId === job.id && a.userId === profile?.id);
+  // Live Timer Countdown Hook
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+    isExpired: boolean;
+  }>({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: false });
 
-  // Calculate days remaining
-  const calculateDeadline = (dateStr: string) => {
-    const today = new Date();
-    const deadline = new Date(dateStr);
-    const diffTime = deadline.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      if (!job.deadline) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: false });
+        return;
+      }
 
-    if (diffDays < 0) return { label: lang === 'EN' ? 'Expired' : 'মেয়াদ শেষ', color: 'text-rose-600 bg-rose-50' };
-    if (diffDays === 0) return { label: lang === 'EN' ? 'Expires Today' : 'আজ শেষ দিন', color: 'text-amber-700 bg-amber-50' };
-    return { label: lang === 'EN' ? `${diffDays} days left` : `বাকি ${diffDays} দিন`, color: 'text-slate-600 bg-slate-100' };
-  };
+      const deadlineDate = new Date(job.deadline);
+      // End of deadline day (23:59:59)
+      deadlineDate.setHours(23, 59, 59, 999);
+      const now = new Date().getTime();
+      const diff = deadlineDate.getTime() - now;
 
-  const deadlineInfo = calculateDeadline(job.deadline);
+      if (diff <= 0 || job.status === 'closed') {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true });
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft({ days, hours, minutes, seconds, isExpired: false });
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, [job.deadline, job.status]);
+
+  const formattedDate = formatDeadlineDate(job.deadline, lang);
 
   return (
     <div
-      className={`group relative bg-white rounded-2xl p-5 border transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 ${
-        job.featured
-          ? 'border-emerald-200 shadow-md ring-1 ring-emerald-500/20'
-          : 'border-slate-200 hover:border-slate-300'
-      }`}
+      onClick={() => {
+        window.location.hash = `#/job/${job.id}`;
+        setSelectedJobForModal(job);
+      }}
+      className="group relative bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between gap-4"
     >
-      {/* Top Banner Row */}
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-3">
-          {/* Company Logo / Placeholder */}
-          {job.companyLogo ? (
-            <img
-              src={job.companyLogo}
-              alt={job.company}
-              className="w-12 h-12 rounded-xl object-cover border border-slate-100 bg-slate-50 shrink-0"
-              onError={(e) => {
-                // Fallback to initial
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
-          ) : null}
-          <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 shrink-0 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-colors">
+      {/* Top Section: Institute Logo + Full Title */}
+      <div className="flex items-start gap-3.5">
+        {/* Institute Logo */}
+        {job.companyLogo ? (
+          <img
+            src={job.companyLogo}
+            alt={job.company}
+            className="w-12 h-12 rounded-full object-cover bg-white p-0.5 border-2 border-emerald-500/80 shadow-sm shrink-0"
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-full bg-blue-600 border-2 border-blue-400 flex items-center justify-center font-bold text-white text-[11px] shrink-0 text-center leading-tight p-1 shadow-sm">
             <Building2 className="w-6 h-6" />
           </div>
+        )}
 
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
-                {job.title}
-              </h3>
-              {job.featured && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wider">
-                  <Sparkles className="w-3 h-3 text-amber-600" />
-                  Featured
-                </span>
-              )}
-            </div>
-            <p className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 mt-0.5">
-              <span>{job.company}</span>
-              <span>•</span>
-              <span className="text-emerald-700 font-bold">{job.category}</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Bookmark Heart / Save Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleSaveJob(job.id);
-          }}
-          title={isSaved ? 'Remove from Saved' : 'Save Job'}
-          className={`p-2 rounded-xl transition-all cursor-pointer ${
-            isSaved
-              ? 'bg-rose-50 text-rose-600 border border-rose-200 scale-105'
-              : 'bg-slate-50 text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
-        </button>
-      </div>
-
-      {/* Description Snippet */}
-      <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-4">
-        {job.description}
-      </p>
-
-      {/* Badges / Job Info Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 py-3 px-3 bg-slate-50 rounded-xl border border-slate-100 mb-4 text-xs font-medium text-slate-700">
-        <div className="flex items-center gap-1.5 truncate">
-          <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-          <span className="truncate">{job.location}</span>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <Banknote className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-          <span className="font-bold text-slate-900 truncate">{job.salaryRange}</span>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-          <span className={`px-2 py-0.5 rounded-full font-semibold text-[11px] ${deadlineInfo.color}`}>
-            {deadlineInfo.label}
-          </span>
+        {/* Full Job Title */}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm sm:text-base font-bold text-slate-100 group-hover:text-blue-300 transition-colors leading-snug">
+            {job.title}
+          </h3>
         </div>
       </div>
 
-      {/* Bottom CTA & Applied Indicator */}
-      <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-100">
-        <div className="flex items-center gap-2">
-          <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-            {job.jobType}
-          </span>
-          <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-700">
-            {job.experienceLevel}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {hasApplied ? (
-            <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-teal-50 text-teal-800 border border-teal-200 text-xs font-bold">
-              <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
-              {lang === 'EN' ? 'Applied' : 'আবেদিত'}
+      {/* Bottom Row: Live Countdown (Left) & Deadline Badge (Right) */}
+      <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80 text-xs">
+        {/* Left Side: Live Timer */}
+        <div className="flex items-center gap-1.5 font-bold">
+          <Hourglass
+            className={`w-3.5 h-3.5 ${
+              timeLeft.isExpired ? 'text-rose-500' : 'text-amber-400 animate-pulse'
+            } shrink-0`}
+          />
+          {timeLeft.isExpired ? (
+            <span className="text-rose-400 font-extrabold text-[11px]">মেয়াদ শেষ</span>
+          ) : (
+            <span className="text-amber-300 text-[11px] tracking-wide">
+              বাকি {toBnNumber(timeLeft.days)}দিন {toBnNumber(timeLeft.hours)}ঘণ্টা {toBnNumber(timeLeft.minutes)}মি {toBnNumber(timeLeft.seconds)}সে
             </span>
-          ) : null}
+          )}
+        </div>
 
-          <button
-            onClick={() => setSelectedJobForModal(job)}
-            className="flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white font-semibold text-xs transition-all shadow-xs group-hover:bg-emerald-600 cursor-pointer"
-          >
-            <span>{t('viewDetails', lang)}</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+        {/* Right Side: Deadline Badge */}
+        <div className="bg-sky-700 hover:bg-sky-600 text-white font-extrabold px-3 py-1 rounded-sm text-[11px] sm:text-xs shrink-0 shadow-xs border border-sky-500 flex items-center gap-1">
+          <Calendar className="w-3 h-3 text-sky-200" />
+          <span>Deadline: {formattedDate}</span>
         </div>
       </div>
     </div>
   );
 };
+

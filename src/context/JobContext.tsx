@@ -206,7 +206,11 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setActiveTab = (tab: ActiveTab) => {
     setActiveTabState(tab);
+    setSelectedJobForModal(null);
     if (typeof window !== 'undefined') {
+      if (window.location.hash) {
+        window.location.hash = '';
+      }
       const targetPath = tab === 'jobs' ? '/' : `/${tab}`;
       if (window.location.pathname !== targetPath) {
         window.history.pushState({ tab }, '', targetPath);
