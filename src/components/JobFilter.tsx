@@ -11,6 +11,7 @@ export const JobFilter: React.FC = () => {
     'Govt. Job',
     'Private Job',
     'University Admission Notice',
+    'Exam Result',
     'Software & IT',
     'Digital Marketing',
     'Graphic Design',

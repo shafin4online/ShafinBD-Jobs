@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Job } from '../types';
-import { ExternalLink, Building2, Share2, Send, MessageCircle } from 'lucide-react';
+import { ExternalLink, Building2, Share2, Send, MessageCircle, Bookmark } from 'lucide-react';
 import { TopHeader } from './TopHeader';
 import { Sidebar } from './Sidebar';
 import { AdminSidebar } from './AdminSidebar';
@@ -14,10 +14,12 @@ interface JobDetailsPageProps {
 }
 
 export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) => {
-  const { authUser, activeTab } = useJobContext();
+  const { authUser, activeTab, profile, toggleSaveJob } = useJobContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const isSaved = (profile?.savedJobs || []).includes(job.id);
 
   const userEmail = authUser?.email ? authUser.email.trim().toLowerCase() : '';
   const isUserAdmin = !!userEmail && ADMIN_EMAILS.some((e) => e.trim().toLowerCase() === userEmail);
@@ -71,13 +73,29 @@ export const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ job, onBack }) =
         <main className="flex-1 p-2 sm:p-4 md:p-6 flex flex-col items-center max-w-4xl w-full mx-auto space-y-3">
           
           {/* Main Title Section - Prominent Cyan/Sky Blue */}
-          <div className="text-center pt-1 pb-1 space-y-1 w-full">
+          <div className="text-center pt-1 pb-1 space-y-2 w-full">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-sky-400 leading-snug tracking-wide">
               {job.title}
             </h1>
-            <p className="text-[11px] text-slate-400 font-medium">
-              পোস্ট আইডি: <span className="font-mono text-slate-300">/job/{job.id}</span>
-            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <p className="text-[11px] text-slate-400 font-medium">
+                পোস্ট আইডি: <span className="font-mono text-slate-300">/job/{job.id}</span>
+              </p>
+
+              {/* Bookmark / Save Button */}
+              <button
+                onClick={() => toggleSaveJob(job.id)}
+                title={isSaved ? "সংরক্ষিত তালিকা থেকে সরান" : "বুকমার্ক করে সেভ রাখুন"}
+                className={`px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer border shadow-sm ${
+                  isSaved
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30'
+                    : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-700'
+                }`}
+              >
+                <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-amber-400 text-amber-400' : 'text-slate-400'}`} />
+                <span>{isSaved ? 'সংরক্ষিত (Saved)' : 'সেভ করুন (Save Job)'}</span>
+              </button>
+            </div>
           </div>
 
           {/* Informational Details Section with Finger Point Emojis (👉) & Flags - Minimal Padding & Compact Spacing */}

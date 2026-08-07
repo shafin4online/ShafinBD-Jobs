@@ -395,7 +395,7 @@ export const AdminPanel: React.FC = () => {
         : [];
 
     setJobForm({
-      postType: job.postType || (job.category === 'Private Job' ? 'private' : job.category === 'University Admission Notice' ? 'university' : 'govt'),
+      postType: job.postType || (job.category === 'Private Job' ? 'private' : job.category === 'University Admission Notice' ? 'university' : (job.category === 'Exam Result' || job.category.toLowerCase().includes('result') || job.category.toLowerCase().includes('exam')) ? 'exam-result' : 'govt'),
       title: job.title || '',
       company: job.company || '',
       companyLogo: job.companyLogo || '',

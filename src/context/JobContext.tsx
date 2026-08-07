@@ -84,6 +84,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         'private-jobs',
         'university-admission',
         'exam-results',
+        'saved-jobs',
         'applications',
         'profile',
         'admin',
@@ -123,6 +124,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           'private-jobs',
           'university-admission',
           'exam-results',
+          'saved-jobs',
           'applications',
           'profile',
           'admin',
@@ -519,9 +521,15 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const toggleSaveJob = (jobId: string) => {
     setProfile((prev) => {
-      const isSaved = prev.savedJobs.includes(jobId);
-      const newSaved = isSaved ? prev.savedJobs.filter((id) => id !== jobId) : [...prev.savedJobs, jobId];
+      const currentSaved = prev?.savedJobs || [];
+      const isSaved = currentSaved.includes(jobId);
+      const newSaved = isSaved ? currentSaved.filter((id) => id !== jobId) : [...currentSaved, jobId];
       const updated = { ...prev, savedJobs: newSaved };
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.PROFILE, JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to update local storage profile for savedJobs:', e);
+      }
       if (authUser?.uid) saveProfileToFirestore(updated);
       return updated;
     });

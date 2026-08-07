@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Job } from '../types';
 import { useJobContext } from '../context/JobContext';
 import { parseToDate } from '../context/jobLifecycle';
-import { Building2, Hourglass, Calendar } from 'lucide-react';
+import { Building2, Hourglass, Calendar, Bookmark } from 'lucide-react';
 
 interface JobCardProps {
   job: Job;
@@ -41,7 +41,8 @@ const formatDeadlineDate = (dateStr: string, lang: string): string => {
 };
 
 export const JobCard: React.FC<JobCardProps> = ({ job }) => {
-  const { setSelectedJobForModal, lang } = useJobContext();
+  const { setSelectedJobForModal, lang, profile, toggleSaveJob } = useJobContext();
+  const isSaved = (profile?.savedJobs || []).includes(job.id);
 
   // Live Timer Countdown Hook
   const [timeLeft, setTimeLeft] = useState<{
@@ -94,7 +95,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
         window.location.hash = `#/job/${job.id}`;
         setSelectedJobForModal(job);
       }}
-      className="group relative bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between gap-4"
+      className="group relative bg-slate-950 hover:bg-slate-900 border-y sm:border border-slate-800 hover:border-slate-700 rounded-none sm:rounded-xl p-3.5 sm:p-4 transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between gap-3 sm:gap-4 w-full"
     >
       {/* Top Section: Institute Logo + Full Title */}
       <div className="flex items-start gap-3.5">
@@ -114,11 +115,27 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           </div>
         )}
 
-        {/* Full Job Title */}
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm sm:text-base font-bold text-slate-100 group-hover:text-blue-300 transition-colors leading-snug">
+        {/* Full Job Title + Bookmark Save Button */}
+        <div className="flex-1 min-w-0 flex items-start justify-between gap-2">
+          <h3 className="text-base sm:text-lg font-bold text-slate-100 group-hover:text-blue-300 transition-colors leading-snug">
             {job.title}
           </h3>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleSaveJob(job.id);
+            }}
+            title={isSaved ? "সংরক্ষিত তালিকা থেকে সরান" : "বুকমার্ক করে সেভ রাখুন"}
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer shrink-0 ${
+              isSaved
+                ? 'text-amber-400 hover:text-amber-300 bg-amber-400/20 border border-amber-500/40'
+                : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800 border border-transparent'
+            }`}
+          >
+            <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-amber-400 text-amber-400' : ''}`} />
+          </button>
         </div>
       </div>
 

@@ -1,6 +1,10 @@
 export type JobType = 'Full-time' | 'Part-time' | 'Remote' | 'Contract' | 'Internship';
 
 export type JobCategory =
+  | 'Govt. Job'
+  | 'Private Job'
+  | 'University Admission Notice'
+  | 'Exam Result'
   | 'Software & IT'
   | 'Digital Marketing'
   | 'Graphic Design'
@@ -8,10 +12,7 @@ export type JobCategory =
   | 'Customer Support'
   | 'Data Entry'
   | 'Engineering'
-  | 'Sales & Business'
-  | 'Govt. Job'
-  | 'Private Job'
-  | 'University Admission Notice';
+  | 'Sales & Business';
 
 export type ExperienceLevel = 'Entry Level' | 'Mid Level' | 'Senior Level' | 'Executive';
 
@@ -184,6 +185,7 @@ export type ActiveTab =
   | 'private-jobs'
   | 'university-admission'
   | 'exam-results'
+  | 'saved-jobs'
   | 'applications' 
   | 'profile' 
   | 'admin' 

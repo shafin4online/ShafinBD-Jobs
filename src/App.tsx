@@ -18,12 +18,14 @@ import { setupPushBroadcastListener } from './lib/pushNotification';
 import { parseToDate } from './context/jobLifecycle';
 import { LoginRequiredCard } from './components/LoginRequiredCard';
 import { MobileFilterModal } from './components/MobileFilterModal';
+import { SavedJobsList } from './components/profile/SavedJobsList';
 
 const MainContent: React.FC = () => {
   const { 
     activeTab, 
     jobs, 
     filters, 
+    profile,
     showAuthModal, 
     setShowAuthModal,
     showActivationModal,
@@ -93,6 +95,7 @@ const MainContent: React.FC = () => {
     if (activeTab === 'govt-jobs' && !job.category.toLowerCase().includes('govt')) return false;
     if (activeTab === 'private-jobs' && !job.category.toLowerCase().includes('private')) return false;
     if (activeTab === 'university-admission' && !job.category.toLowerCase().includes('university') && !job.category.toLowerCase().includes('admission')) return false;
+    if (activeTab === 'exam-results' && job.postType !== 'exam-result' && job.category !== 'Exam Result') return false;
 
     // Search keyword
     if (filters.searchKeyword) {
@@ -206,7 +209,7 @@ const MainContent: React.FC = () => {
           onOpenMobileFilter={() => setIsMobileFilterOpen(true)}
         />
 
-        <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-6">
+        <main className="flex-1 px-0 py-2 sm:p-6 max-w-7xl w-full mx-auto space-y-3 sm:space-y-6">
           {/* JOBS BOARD / SPECIFIC CATEGORIES */}
           {['jobs', 'govt-jobs', 'private-jobs', 'university-admission'].includes(activeTab) && (
             <JobBoardView
@@ -223,6 +226,13 @@ const MainContent: React.FC = () => {
 
           {/* TAB: EXAM RESULTS */}
           {activeTab === 'exam-results' && <ExamResultsPage />}
+
+          {/* TAB: SAVED JOBS */}
+          {activeTab === 'saved-jobs' && (
+            <div className="px-3 sm:px-0">
+              <SavedJobsList jobs={(jobs || []).filter((j) => (profile?.savedJobs || []).includes(j.id))} />
+            </div>
+          )}
 
           {/* TAB: CANDIDATE PROFILE */}
           {activeTab === 'profile' && (

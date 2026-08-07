@@ -76,7 +76,7 @@ export const AdminCategories: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {categoriesList.map((cat) => {
             const count = jobs.filter((j) => j.category === cat).length;
-            const isProtected = ['Govt. Job', 'Private Job', 'University Admission Notice'].includes(cat);
+            const isProtected = ['Govt. Job', 'Private Job', 'University Admission Notice', 'Exam Result'].includes(cat);
 
             return (
               <div

@@ -37,7 +37,7 @@ export const JobForm: React.FC<JobFormProps> = ({
   const handlePostTypeChange = (newType: PostCategoryType) => {
     let category = 'Govt. Job';
     if (newType === 'private') category = 'Private Job';
-    if (newType === 'exam-result') category = 'Software & IT';
+    if (newType === 'exam-result') category = 'Exam Result';
     if (newType === 'university') category = 'University Admission Notice';
 
     setJobForm((prev: any) => ({

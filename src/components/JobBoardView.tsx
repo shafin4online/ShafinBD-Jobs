@@ -72,7 +72,7 @@ export const JobBoardView: React.FC<JobBoardViewProps> = ({
         ) : (
           <div className="space-y-6">
             {/* Responsive 3-Column (Large), 2-Column (Medium), 1-Column (Mobile) Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-5">
               {displayedJobs.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}

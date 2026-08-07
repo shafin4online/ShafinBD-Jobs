@@ -9,6 +9,8 @@ import {
   Briefcase, 
   GraduationCap, 
   UserCheck, 
+  Bookmark,
+  Globe,
   FileText, 
   ShieldAlert, 
   Info, 
@@ -33,8 +35,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     profile, 
     logoutUser,
     setShowAuthModal,
-    lang
+    lang,
+    setLang
   } = useJobContext();
+
+  const savedJobsCount = profile?.savedJobs?.length || 0;
 
   const handleTabClick = (tab: ActiveTab) => {
     if ((tab === 'profile' || tab === 'applications') && !authUser) {
@@ -52,8 +57,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { id: 'private-jobs', key: 'privateJobs', icon: Briefcase },
     { id: 'university-admission', key: 'univAdmission', icon: GraduationCap, badge: 'New' },
     { id: 'exam-results', key: 'examResults', icon: Award, badge: 'Result' },
+    { id: 'saved-jobs', key: 'savedJobs', icon: Bookmark },
     { id: 'profile', key: 'candidateProfile', icon: UserCheck },
-    { id: 'applications', key: 'myApplications', icon: FileText },
   ];
 
   const infoNavItems: Array<{ id: ActiveTab; key: TranslationKey; icon: any }> = [
@@ -103,7 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg lg:hidden"
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg lg:hidden cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -121,6 +126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             {candidateNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
+              const isSavedTab = item.id === 'saved-jobs';
               return (
                 <button
                   key={item.id}
@@ -132,16 +138,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : isSavedTab ? 'text-amber-400 fill-amber-400/30' : 'text-slate-400'}`} />
                     <span>{t(item.key, lang)}</span>
                   </div>
-                  {item.badge && (
+                  {isSavedTab ? (
+                    <span className={`text-[11px] px-2 py-0.5 rounded-full font-black ${
+                      isActive ? 'bg-amber-400 text-slate-950' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    }`}>
+                      {savedJobsCount}
+                    </span>
+                  ) : item.badge ? (
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold ${
                       isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
                     }`}>
                       {item.badge}
                     </span>
-                  )}
+                  ) : null}
                 </button>
               );
             })}
@@ -171,8 +183,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Footer User Info */}
+        {/* Footer Language Switcher + User Info */}
         <div className="p-3 bg-slate-950/80 border-t border-slate-800 space-y-2">
+          {/* Language Switch Row */}
+          <div className="flex items-center justify-between p-2 bg-slate-900 rounded-xl border border-slate-800">
+            <span className="text-xs font-extrabold text-slate-300 flex items-center gap-2">
+              <Globe className="w-4 h-4 text-emerald-400" />
+              <span>ভাষা (Language)</span>
+            </span>
+            <button
+              onClick={() => setLang(lang === 'BN' ? 'EN' : 'BN')}
+              className="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-extrabold text-xs rounded-lg border border-emerald-500/30 transition-colors cursor-pointer"
+            >
+              {lang === 'BN' ? 'বাংলা (BN)' : 'English (EN)'}
+            </button>
+          </div>
+
           {authUser ? (
             <div className="flex items-center justify-between gap-2 p-2 bg-slate-900 rounded-xl border border-slate-800">
               <div className="flex items-center gap-2 overflow-hidden">

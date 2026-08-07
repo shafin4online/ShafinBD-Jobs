@@ -10,6 +10,7 @@ export const INITIAL_CATEGORIES = [
   '🏛️ Govt. Job',
   '💼 Private Job',
   '🎓 University Admission Notice',
+  '🏆 Exam Result',
   'Software & IT',
   'Digital Marketing',
   'Graphic Design',
