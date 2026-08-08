@@ -37,6 +37,7 @@ export const EducationCard: React.FC<{
   institute?: string;
   subject?: string;
   result?: string;
+  gpaPoint?: string;
   year?: string;
   duration?: string;
   required?: boolean;
@@ -51,6 +52,7 @@ export const EducationCard: React.FC<{
   institute,
   subject,
   result,
+  gpaPoint,
   year,
   duration,
   optional,
@@ -142,7 +144,7 @@ export const EducationCard: React.FC<{
                 Result:
               </span>{' '}
               <strong className="text-emerald-700 font-extrabold">
-                {result}
+                {result} {gpaPoint ? `(${gpaPoint})` : ''}
               </strong>
             </div>
           )}

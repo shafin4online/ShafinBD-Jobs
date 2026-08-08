@@ -112,6 +112,12 @@ export const ProfilePersonalViewSection: React.FC<ProfilePersonalViewSectionProp
             }
           />
           <DetailItem label="Marital Status" value={formData.maritalStatus} />
+          {formData.maritalStatus === 'Married' && (
+            <DetailItem
+              label="Spouse Name (স্বামী/স্ত্রীর নাম)"
+              value={formData.spouseName}
+            />
+          )}
           <DetailItem label="Mobile Number" value={formData.phone} highlight />
           <DetailItem label="Email Address" value={formData.email} highlight />
           <DetailItem label="Quota (কোটা)" value={formData.quota} />

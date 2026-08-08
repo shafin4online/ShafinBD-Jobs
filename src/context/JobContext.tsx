@@ -28,6 +28,7 @@ import { createGoogleProfile, createNewJobObject, createNewApplicationObject } f
 import { triggerPushBroadcast } from '../lib/pushNotification';
 import { ADMIN_EMAILS, INITIAL_CATEGORIES, INITIAL_SAMPLE_USERS, INITIAL_NOTIFICATIONS } from './jobConstants';
 import { processJobLifecycle } from './jobLifecycle';
+import { syncProfileToExtension } from '../lib/extensionSync';
 
 // Re-export for components that import directly from JobContext
 export { ADMIN_EMAILS, processJobLifecycle };
@@ -284,6 +285,13 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
     return () => unsubscribe();
   }, []);
+
+  // Sync profile & Firebase Auth ID token to Teletalk Browser Extension
+  useEffect(() => {
+    if (profile && profile.fullName) {
+      syncProfileToExtension(profile, authUser);
+    }
+  }, [profile, authUser]);
 
   useEffect(() => { clearDemoDataFromFirestore(); }, []);
 

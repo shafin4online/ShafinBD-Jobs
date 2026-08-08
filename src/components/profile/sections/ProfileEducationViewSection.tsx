@@ -91,6 +91,7 @@ export const ProfileEducationViewSection: React.FC<ProfileEducationViewSectionPr
               group={formData.sscGroup}
               board={formData.sscBoard}
               result={formData.sscResult}
+              gpaPoint={formData.sscGpaPoint}
               year={formData.sscYear}
               required
             />
@@ -152,6 +153,7 @@ export const ProfileEducationViewSection: React.FC<ProfileEducationViewSectionPr
               group={formData.hscGroup}
               board={formData.hscBoard}
               result={formData.hscResult}
+              gpaPoint={formData.hscGpaPoint}
               year={formData.hscYear}
               required
             />
@@ -216,6 +218,7 @@ export const ProfileEducationViewSection: React.FC<ProfileEducationViewSectionPr
               institute={formData.gradInstitute}
               subject={formData.gradSubject}
               result={formData.gradResult}
+              gpaPoint={formData.gradGpaPoint}
               year={formData.gradYear}
               duration={formData.gradDuration}
               optional
@@ -281,6 +284,7 @@ export const ProfileEducationViewSection: React.FC<ProfileEducationViewSectionPr
               institute={formData.mastersInstitute}
               subject={formData.mastersSubject}
               result={formData.mastersResult}
+              gpaPoint={formData.mastersGpaPoint}
               year={formData.mastersYear}
               duration={formData.mastersDuration}
               optional

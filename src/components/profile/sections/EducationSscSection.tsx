@@ -1,5 +1,6 @@
 import React from 'react';
 import { BOARDS, PASSING_YEARS } from '../../../data/bdLocationData';
+import { sanitizeGpaInput } from '../../../utils/gpa';
 
 interface EducationSscSectionProps {
   formData: any;
@@ -10,6 +11,8 @@ export const EducationSscSection: React.FC<EducationSscSectionProps> = ({
   formData,
   updateField,
 }) => {
+  const isGpaSelected = formData.sscResult === 'GPA (Out of 5.00)' || formData.sscResult?.startsWith('GPA');
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between pb-2 border-b border-slate-200">
@@ -111,7 +114,13 @@ export const EducationSscSection: React.FC<EducationSscSectionProps> = ({
           <select
             required
             value={formData.sscResult || 'Select'}
-            onChange={(e) => updateField('sscResult', e.target.value)}
+            onChange={(e) => {
+              const res = e.target.value;
+              updateField('sscResult', res);
+              if (!res.startsWith('GPA')) {
+                updateField('sscGpaPoint', '');
+              }
+            }}
             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
           >
             <option value="Select">Select</option>
@@ -122,6 +131,27 @@ export const EducationSscSection: React.FC<EducationSscSectionProps> = ({
             <option value="Passed">Passed</option>
           </select>
         </div>
+
+        {/* Conditional GPA Input */}
+        {isGpaSelected && (
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              GPA (প্রাপ্ত জিপিএ) *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. 5.00"
+              value={formData.sscGpaPoint || ''}
+              onChange={(e) => {
+                const sanitized = sanitizeGpaInput(e.target.value, 5.00);
+                updateField('sscGpaPoint', sanitized);
+              }}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-emerald-300 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none bg-emerald-50/20"
+            />
+            <span className="text-[10px] text-slate-500 mt-0.5 block">সর্বোচ্চ মান: 5.00</span>
+          </div>
+        )}
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">

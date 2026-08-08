@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShafinBD Jobs AutoFiller</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    
+    <!-- Top Header -->
+    <header class="header">
+      <div class="brand">
+        <span class="brand-logo">⚡</span>
+        <div class="brand-title">
+          <h1>ShafinBD Jobs</h1>
+          <span class="subtitle">Teletalk AutoFiller</span>
+        </div>
+      </div>
+      <div id="connection-badge" class="badge disconnected">
+        • সংযোগ বিচ্ছিন্ন
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="content">
+
+      <!-- Logged In Profile Card -->
+      <div id="profile-card" class="card hidden">
+        <div class="profile-header">
+          <div class="avatar" id="user-avatar">U</div>
+          <div class="profile-details">
+            <h2 id="user-name">User Name</h2>
+            <p id="user-email">user@email.com</p>
+            <p id="user-phone" class="phone-tag">01700000000</p>
+          </div>
+        </div>
+
+        <div class="profile-stats">
+          <div class="stat-item">
+            <span class="stat-label">NID Status</span>
+            <span id="nid-status" class="stat-value">নাই</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Last Sync</span>
+            <span id="last-sync" class="stat-value">এখনই</span>
+          </div>
+        </div>
+
+        <!-- Primary Action Button -->
+        <button id="btn-autofill" class="btn btn-primary">
+          ⚡ Teletalk ফরম অটো-ফিল করুন
+        </button>
+      </div>
+
+      <!-- Logged Out Notice Card -->
+      <div id="logged-out-card" class="card text-center">
+        <div class="lock-icon">🔒</div>
+        <h3>পোর্টালে লগইন করা নেই</h3>
+        <p class="notice-desc">
+          Teletalk এর ফরমগুলো অটো-ফিল করতে দয়া করে প্রথমে আমাদের ShafinBD Jobs পোর্টালে লগইন করুন।
+        </p>
+        <button id="btn-open-portal" class="btn btn-secondary">
+          🌐 ShafinBD Jobs পোর্টালে যান
+        </button>
+      </div>
+
+      <!-- Settings Section -->
+      <div class="settings-section">
+        <button id="toggle-settings" class="settings-header">
+          ⚙️ অ্যাডভান্সড ডিল ফার্ম সেটিংস (Settings)
+        </button>
+
+        <div id="settings-body" class="settings-body hidden">
+          <div class="setting-item">
+            <label for="delay-cascading">
+              জেলা ➔ উপজেলা লোডিং ডিলে (Delay): <span id="val-cascading">600</span>ms
+            </label>
+            <input type="range" id="delay-cascading" min="300" max="2000" step="100" value="600">
+            <p class="help-text">জেলা সিলেক্ট করার পর উপজেলা লোড হতে এই সময় অপেক্ষা করবে।</p>
+          </div>
+
+          <div class="setting-item">
+            <label for="delay-conditional">
+              NID/পাসপোর্ট ফিল্ড রিভিল ডিলে: <span id="val-conditional">250</span>ms
+            </label>
+            <input type="range" id="delay-conditional" min="100" max="1000" step="50" value="250">
+            <p class="help-text">Yes সিলেক্ট করার পর টেক্সট ইনপুট বক্স আসার ডিলে।</p>
+          </div>
+
+          <button id="btn-save-settings" class="btn btn-sm btn-outline">
+            💾 সেটিংস সেভ করুন
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer Note -->
+    <footer class="footer">
+      <p>🔒 Captcha এবং Submit বাটন ব্যবহারকারীকে ম্যানুয়ালি পূরণ করতে হবে।</p>
+    </footer>
+
+  </div>
+
+  <script src="../utils/browser-polyfill.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

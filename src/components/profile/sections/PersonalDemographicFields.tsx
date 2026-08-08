@@ -85,7 +85,13 @@ export const PersonalDemographicFields: React.FC<PersonalDemographicFieldsProps>
         <select
           required
           value={formData.maritalStatus || 'Select'}
-          onChange={(e) => updateField('maritalStatus', e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            updateField('maritalStatus', val);
+            if (val !== 'Married') {
+              updateField('spouseName', '');
+            }
+          }}
           className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
         >
           <option value="Select">Select</option>
@@ -95,6 +101,23 @@ export const PersonalDemographicFields: React.FC<PersonalDemographicFieldsProps>
           <option value="Widowed">Widowed</option>
         </select>
       </div>
+
+      {/* Spouse Name (Shown when Married) */}
+      {formData.maritalStatus === 'Married' && (
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1">
+            Spouse Name (স্বামী / স্ত্রীর নাম) *
+          </label>
+          <input
+            type="text"
+            required
+            placeholder="Enter spouse name"
+            value={formData.spouseName || ''}
+            onChange={(e) => updateField('spouseName', e.target.value)}
+            className="w-full px-3.5 py-2.5 rounded-xl border border-emerald-300 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none bg-emerald-50/20"
+          />
+        </div>
+      )}
 
       {/* Quota */}
       <div>

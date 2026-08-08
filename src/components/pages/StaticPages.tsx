@@ -26,32 +26,77 @@ export const StaticPages: React.FC<StaticPagesProps> = ({ type }) => {
             <Lock className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">গোপনীয়তা নীতি (Privacy Policy)</h1>
-            <p className="text-xs text-slate-500">সর্বশেষ আপডেট: আগস্ট ২০২৬ | Shafin BD Jobs</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">গোপনীয়তা নীতি (Privacy Policy)</h1>
+            <p className="text-xs text-slate-500">সর্বশেষ আপডেট: আগস্ট ২০২৬ | Shafin BD Jobs Portal & Browser Extension</p>
           </div>
         </div>
 
-        <div className="space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
-          <p>
-            Shafin BD (শাফিন BD) চাকরি ও শিক্ষা পোর্টালে আপনার তথ্যের সুরক্ষা আমাদের কাছে অত্যন্ত গুরুত্বপূর্ণ। এই গোপনীয়তা নীতিতে বিস্তারিত আলোচনা করা হয়েছে কীভাবে আমরা আপনার তথ্য সংগ্রহ, সংরক্ষণ ও ব্যবহার করি।
+        <div className="space-y-6 text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+          <p className="text-sm font-semibold text-slate-800 bg-emerald-50/80 p-4 rounded-2xl border border-emerald-100">
+            Shafin BD Jobs (শাফিন BD) পোর্টাল এবং "ShafinBD Jobs - Teletalk AutoFill Extension" আপনার ব্যক্তিগত তথ্যের গোপনীয়তা ও সুরক্ষাকে সর্বোচ্চ অগ্রাধিকার দেয়। এই নীতিমালায় আমাদের ওয়েব অ্যাপ্লিকেশন এবং ব্রাউজার এক্সটেনশন কর্তৃক তথ্য সংগ্রহ, ব্যবহার, সংরক্ষণ এবং সিকিউরিটি কমপ্লায়েন্স সম্পর্কে বিস্তারিত ব্যাখ্যা করা হয়েছে।
           </p>
 
-          <h3 className="text-sm font-bold text-slate-900 pt-2">১. যেসকল তথ্য আমরা সংগ্রহ করি</h3>
-          <ul className="list-disc pl-5 space-y-1 text-xs text-slate-600">
-            <li><strong>ব্যক্তিগত তথ্য:</strong> নাম, ইমেইল, মোবাইল নম্বর, জন্ম তারিখ, স্থায়ী ও বর্তমান ঠিকানা।</li>
-            <li><strong>পেশাগত তথ্য:</strong> শিক্ষাগত যোগ্যতা, কাজের অভিজ্ঞতা, রেজুমে / CV বিবরণ।</li>
-            <li><strong>অ্যাকাউন্ট তথ্য:</strong> গুগল সাইন ইন তথ্য ও প্রোফাইল ছবি।</li>
-          </ul>
+          <div className="space-y-3">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center">১</span>
+              ওয়েব পোর্টালে সংগৃহীত তথ্য ও ব্যবহার (Web Application Data Collection)
+            </h3>
+            <ul className="list-disc pl-6 space-y-2 text-slate-600">
+              <li><strong>ব্যক্তিগত তথ্য (Personal Data):</strong> নাম, পিতা/মাতার নাম, লিঙ্গ, বৈবাহিক অবস্থা, ধর্ম, জন্ম তারিখ, জাতীয় পরিচয়পত্র (NID) / জন্ম নিবন্ধন নম্বর, মোবাইল নম্বর ও ইমেইল ঠিকানা।</li>
+              <li><strong>এড্রেস ও একাডেমিক ডাটা (Addresses & Academics):</strong> বর্তমান ও স্থায়ী ঠিকানা (বিভাগ, জেলা, উপজেলা, পোস্ট কোড), SSC, HSC ও স্নাাতক/Graduation পরীক্ষার রোল, রেজিস্ট্রেশন, জিপিএ, বোর্ড, বিভাগ ও পাসের সাল।</li>
+              <li><strong>মিডিয়া ও প্রোফাইল ছবি (Media & Canvas Engine):</strong> আবেদনের জন্য ব্যবহৃত ছবি (300x300 px) এবং স্বাক্ষর (300x80 px), যা ক্লায়েন্ট-সাইড HTML Canvas দ্বারা স্বয়ংক্রিয়ভাবে সাইজ ও ফরম্যাট ভ্যালিডেশন করা হয়।</li>
+            </ul>
+          </div>
 
-          <h3 className="text-sm font-bold text-slate-900 pt-2">২. তথ্যের ব্যবহার</h3>
-          <p className="text-xs text-slate-600">
-            আপনার প্রদানকৃত তথ্য শুধুমাত্র আপনার অ্যাকাউন্টে ১-ক্লিক চাকরির আবেদন প্রক্রিয়া সুগম করতে, বিজ্ঞপ্তির আপডেট প্রদান করতে এবং চাকরির মালিক বা নিয়োগকর্তাদের সাথে সংযোগ করিয়ে দিতে ব্যবহৃত হয়।
-          </p>
+          <div className="space-y-3">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center">২</span>
+              ব্রাউজার এক্সটেনশন প্রাইভেসি ও পারমিশন (Browser Extension Privacy Disclosure)
+            </h3>
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-slate-600">
+              <p>Chrome Web Store এবং Firefox Add-ons ডেভেলপার কমপ্লায়েন্স অনুযায়ী:</p>
+              <ul className="list-disc pl-5 space-y-1 text-xs">
+                <li><strong>লোকাল স্টোরেজ (Storage Permission):</strong> এক্সটেনশনটি প্রার্থীর সিঙ্ক করা প্রোফাইল ডাটা কেবল ব্রাউজারের এনক্রিপ্টেড <code>chrome.storage.local</code> বা <code>browser.storage.local</code> এ সংরক্ষণ করে।</li>
+                <li><strong>ওয়েবসাইট ইন্টারঅ্যাকশন (Host Permissions):</strong> এক্সটেনশনটি শুধুমাত্র সরকারি চাকরির আবেদন পোর্টাল (<code>*.teletalk.com.bd</code>) এবং ShafinBD অফিশিয়াল ডোমেইনে কাজ করে। কোনো অননুমোদিত থার্ড-পার্টি ওয়েবসাইটে ডাটা রিড বা অ্যাক্সেস করা হয় না।</li>
+                <li><strong>নো ট্র্যাকিং / নো অ্যানালিটিক্স (Zero Third-Party Telemetry):</strong> এক্সটেনশনটি কোনো প্রকার ইউজার ট্র্যাকিং, ব্রাউজিং হিস্ট্রি ট্র্যাকিং বা বাণিজ্যিক বিজ্ঞাপনের ডাটা সংগ্রাহক ব্যবহার করে না।</li>
+              </ul>
+            </div>
+          </div>
 
-          <h3 className="text-sm font-bold text-slate-900 pt-2">৩. তথ্য সুরক্ষা</h3>
-          <p className="text-xs text-slate-600">
-            আপনার সকল ডাটা Firebase ও এনক্রিপ্টেড ডাটাবেজে সুরক্ষিত রাখা হয়। আমরা কখনোই আপনার ব্যক্তিগত তথ্য কোনো থার্ড-পার্টি প্রতিষ্ঠানের কাছে বিক্রি বা হস্তান্তর করি না।
-          </p>
+          <div className="space-y-3">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center">৩</span>
+              ডাটা নিরাপত্তা ও এনক্রিপশন (Data Security & Compliance)
+            </h3>
+            <p className="text-slate-600">
+              আপনার তথ্য Google Firebase সিকিউর ফায়ারস্টোর ডাটাবেজ এবং HTTPS/SSL এনক্রিপ্টেড প্রোটোকলের মাধ্যমে আদান-প্রদান করা হয়। আপনার লিখিত অনুমতি ছাড়া কখনোই কোনো থার্ড-পার্টি বা বাণিজ্যিক প্রতিষ্ঠানের সাথে তথ্য শেয়ার বা বিক্রি করা হয় না।
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center">৪</span>
+              ব্যবহারকারীর অধিকার ও ডাটা মুছে ফেলা (User Rights & Data Control)
+            </h3>
+            <p className="text-slate-600">
+              যেকোনো সময় ইউজার প্রোফাইল পেজ থেকে আপনার তথ্য পরিবর্তন, সংশোধন বা মুছে ফেলতে পারেন। এক্সটেনশন রিমুভ করার সাথে সাথে ব্রাউজারের ক্যাশ ও লোকাল মেমোরি থেকে আপনার সংসংক্রান্ত সকল ফিল্ড ডাটা স্বয়ংক্রিয়ভাবে মুছে যায়।
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center">৫</span>
+              যোগাযোগ ও সাপোর্ট (Contact & Support)
+            </h3>
+            <p className="text-slate-600">
+              গোপনীয়তা নীতি সংক্রান্ত যেকোনো প্রশ্ন বা সহায়তার জন্য যোগাযোগ করুন:
+            </p>
+            <div className="p-4 rounded-2xl bg-slate-100/80 border border-slate-200 text-slate-800 font-bold text-xs space-y-1">
+              <p>ইমেইল: shafinbd4u@gmail.com</p>
+              <p>ওয়েবসাইট: https://www.jobs.shafinbd.com</p>
+              <p>অবস্থান: ঢাকা, বাংলাদেশ</p>
+            </div>
+          </div>
         </div>
       </div>
     );

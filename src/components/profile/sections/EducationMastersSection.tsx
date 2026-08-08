@@ -1,5 +1,6 @@
 import React from 'react';
 import { UNIVERSITIES, PASSING_YEARS } from '../../../data/bdLocationData';
+import { sanitizeGpaInput } from '../../../utils/gpa';
 
 interface EducationMastersSectionProps {
   formData: any;
@@ -10,6 +11,8 @@ export const EducationMastersSection: React.FC<EducationMastersSectionProps> = (
   formData,
   updateField,
 }) => {
+  const isCgpaSelected = formData.mastersResult?.includes('CGPA') || formData.mastersResult?.includes('GPA');
+  const maxScale = formData.mastersResult?.includes('5.00') ? 5.00 : 4.00;
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between pb-2 border-b border-slate-200">
@@ -119,17 +122,44 @@ export const EducationMastersSection: React.FC<EducationMastersSectionProps> = (
           </label>
           <select
             value={formData.mastersResult || 'Select'}
-            onChange={(e) => updateField('mastersResult', e.target.value)}
+            onChange={(e) => {
+              const res = e.target.value;
+              updateField('mastersResult', res);
+              if (!res.includes('GPA') && !res.includes('CGPA')) {
+                updateField('mastersGpaPoint', '');
+              }
+            }}
             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
           >
             <option value="Select">Select</option>
             <option value="CGPA (Out of 4.00)">CGPA (Out of 4.00)</option>
+            <option value="GPA (Out of 5.00)">GPA (Out of 5.00)</option>
             <option value="1st Class">1st Class</option>
             <option value="2nd Class">2nd Class</option>
             <option value="3rd Class">3rd Class</option>
             <option value="Passed">Passed</option>
           </select>
         </div>
+
+        {/* Conditional CGPA Input */}
+        {isCgpaSelected && (
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              CGPA / GPA Point (প্রাপ্ত জিপিএ)
+            </label>
+            <input
+              type="text"
+              placeholder={`e.g. ${maxScale.toFixed(2)}`}
+              value={formData.mastersGpaPoint || ''}
+              onChange={(e) => {
+                const sanitized = sanitizeGpaInput(e.target.value, maxScale);
+                updateField('mastersGpaPoint', sanitized);
+              }}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-emerald-300 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none bg-emerald-50/20"
+            />
+            <span className="text-[10px] text-slate-500 mt-0.5 block">সর্বোচ্চ মান: {maxScale.toFixed(2)}</span>
+          </div>
+        )}
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">

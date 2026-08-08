@@ -76,6 +76,7 @@ export interface UserProfile {
   hasPassport?: 'Yes' | 'No' | string;
   passportNumber?: string;
   maritalStatus?: string;
+  spouseName?: string;
   phone: string;
   confirmPhone?: string;
   email: string;
@@ -97,6 +98,7 @@ export interface UserProfile {
   sscGroup?: string;
   sscBoard?: string;
   sscResult?: string;
+  sscGpaPoint?: string;
   sscYear?: string;
 
   // HSC/Equivalent Level
@@ -106,6 +108,7 @@ export interface UserProfile {
   hscGroup?: string;
   hscBoard?: string;
   hscResult?: string;
+  hscGpaPoint?: string;
   hscYear?: string;
 
   // Graduation/Equivalent Level
@@ -116,6 +119,7 @@ export interface UserProfile {
   gradYear?: string;
   gradSubject?: string;
   gradResult?: string;
+  gradGpaPoint?: string;
   gradDuration?: string;
 
   // Masters/Equivalent Level
@@ -126,6 +130,7 @@ export interface UserProfile {
   mastersYear?: string;
   mastersSubject?: string;
   mastersResult?: string;
+  mastersGpaPoint?: string;
   mastersDuration?: string;
 
   // Contact info locking (Name, Email, Phone editable only once)

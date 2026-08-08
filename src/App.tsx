@@ -23,6 +23,7 @@ import { SavedJobsList } from './components/profile/SavedJobsList';
 const MainContent: React.FC = () => {
   const { 
     activeTab, 
+    setActiveTab,
     jobs, 
     filters, 
     profile,
@@ -56,11 +57,19 @@ const MainContent: React.FC = () => {
   useEffect(() => {
     const handleHashChange = () => {
       const newHash = window.location.hash;
+      const pathname = window.location.pathname;
       setCurrentHash(newHash);
+
+      if (newHash === '#/privacy' || newHash === '#/privacy-policy' || pathname === '/privacy' || pathname === '/privacy-policy') {
+        setActiveTab('privacy-policy');
+      }
+
       if (!newHash.startsWith('#/job/')) {
         setSelectedJobForModal(null);
       }
     };
+
+    handleHashChange();
 
     window.addEventListener('hashchange', handleHashChange);
     window.addEventListener('popstate', handleHashChange);
@@ -69,7 +78,7 @@ const MainContent: React.FC = () => {
       window.removeEventListener('hashchange', handleHashChange);
       window.removeEventListener('popstate', handleHashChange);
     };
-  }, [setSelectedJobForModal]);
+  }, [setSelectedJobForModal, setActiveTab]);
 
   // Infinite Scroll State
   const [visibleCount, setVisibleCount] = useState(6);
