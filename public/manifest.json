@@ -1,25 +1,40 @@
 {
-  "short_name": "ShafinBD Jobs",
+  "id": "/",
+  "scope": "/",
+  "start_url": "/",
   "name": "ShafinBD Jobs - চাকরির খবর ও ভর্তি বিজ্ঞপ্তি",
+  "short_name": "ShafinBD Jobs",
   "description": "বাংলাদেশের সেরা চাকরির খবর, সরকারি চাকরি, ব্যাংক জব ও বিশ্ববিদ্যালয় ভর্তি বিজ্ঞপ্তি পোর্টাল",
   "icons": [
     {
       "src": "https://res.cloudinary.com/prmoymao/image/upload/v1786423884/pwa-192x192.webp",
       "type": "image/webp",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "https://res.cloudinary.com/prmoymao/image/upload/v1786423884/pwa-192x192.webp",
+      "type": "image/webp",
+      "sizes": "192x192",
+      "purpose": "maskable"
     },
     {
       "src": "https://res.cloudinary.com/prmoymao/image/upload/v1786423884/pwa-512x512.webp",
       "type": "image/webp",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "https://res.cloudinary.com/prmoymao/image/upload/v1786423884/pwa-512x512.webp",
+      "type": "image/webp",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
-  "start_url": "/",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "display": "standalone",
   "orientation": "portrait",
+  "prefer_related_applications": false,
   "categories": ["jobs", "education", "news"]
 }

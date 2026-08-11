@@ -60,6 +60,7 @@ export const PWAInstallPrompt: React.FC = () => {
   const isIOS = typeof navigator !== 'undefined' && /iphone|ipad|ipod/i.test(navigator.userAgent);
 
   if (isDismissed || isInstalled) return null;
+  if (!isInstallable && !deferredPrompt && !showInstructionsModal) return null;
 
   return (
     <>
