@@ -14,7 +14,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
-const APP_ICON = "https://lh3.googleusercontent.com/d/16e44uH8RVDhPCQtepuf_92JTg91rK0Az";
+const APP_ICON = "https://res.cloudinary.com/prmoymao/image/upload/v1786423884/pwa-192x192.webp";
 
 // Firebase background message handler
 messaging.onBackgroundMessage((payload) => {

@@ -9,6 +9,7 @@ import {
 } from './instituteLogoData';
 import { UploadLogoModal } from './UploadLogoModal';
 import { DeleteLogoModal } from './DeleteLogoModal';
+import { uploadToCloudinary, deleteFromCloudinary } from '../../lib/cloudinary';
 
 export type { SavedInstituteLogo };
 
@@ -119,24 +120,22 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
     });
   };
 
-  // Upload new logo file handler -> opens custom popup modal
-  const handleLogoFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload new logo file handler -> uploads to Cloudinary with WebP and <=700KB optimization
+  const handleLogoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 3 * 1024 * 1024) {
-        alert('ইন্সটিটিউট লোগোর সাইজ সর্বাধিক 3 MB হওয়া আবশ্যক!');
-        return;
-      }
       setIsUploading(true);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setPendingLogoUrl(base64);
+      try {
+        const cloudinaryUrl = await uploadToCloudinary(file, 'shafinbd_logos');
+        setPendingLogoUrl(cloudinaryUrl);
         setUploadInstituteName(jobForm.company?.trim() || '');
         setShowUploadModal(true);
+      } catch (err) {
+        console.error('Failed to upload logo to Cloudinary:', err);
+        alert('ক্লাউডিনারিতে লোগো আপলোড ব্যর্থ হয়েছে!');
+      } finally {
         setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+      }
     }
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -179,6 +178,11 @@ export const InstituteLogoSelector: React.FC<InstituteLogoSelectorProps> = ({
 
     const item = logoToDelete;
     const normName = item.name.trim().toLowerCase();
+
+    // Auto-delete from Cloudinary if hosted there
+    if (item.logoUrl) {
+      deleteFromCloudinary(item.logoUrl);
+    }
 
     // Store in deleted keys list in localStorage
     try {

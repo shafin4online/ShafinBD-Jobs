@@ -1,10 +1,11 @@
-const CACHE_NAME = 'shafinbd-jobs-v1';
+const CACHE_NAME = 'shafinbd-jobs-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
-  'https://lh3.googleusercontent.com/d/16e44uH8RVDhPCQtepuf_92JTg91rK0Az',
-  'https://lh3.googleusercontent.com/d/13XxikL54vD-VLwsi_s4wQolYJlegGUbZ'
+  'https://res.cloudinary.com/prmoymao/image/upload/v1786423884/pwa-192x192.webp',
+  'https://res.cloudinary.com/prmoymao/image/upload/v1786423884/pwa-512x512.webp',
+  'https://res.cloudinary.com/prmoymao/image/upload/v1786423885/logo.webp'
 ];
 
 self.addEventListener('install', (event) => {
@@ -55,7 +56,7 @@ self.addEventListener('fetch', (event) => {
 
 // Push notification listener
 self.addEventListener('push', (event) => {
-  const APP_ICON = "https://lh3.googleusercontent.com/d/16e44uH8RVDhPCQtepuf_92JTg91rK0Az";
+  const APP_ICON = "https://res.cloudinary.com/prmoymao/image/upload/v1786423884/pwa-192x192.webp";
   let title = "ShafinBD Jobs - নতুন চাকরির বিজ্ঞপ্তি";
   let body = "নতুন সরকারি ও বেসরকারি চাকরির বিজ্ঞপ্তি দেখতে ট্যাপ করুন।";
   let url = "/";

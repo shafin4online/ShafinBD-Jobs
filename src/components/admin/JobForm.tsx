@@ -1,11 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Job, PostCategoryType } from '../../types';
-import { Sparkles, Save, RotateCcw, Upload, Image as ImageIcon, Trash2, Building2 } from 'lucide-react';
+import { Sparkles, Save, RotateCcw, Upload, Image as ImageIcon, Trash2, Building2, Loader2 } from 'lucide-react';
 import { GovtJobForm } from './forms/GovtJobForm';
 import { PrivateJobForm } from './forms/PrivateJobForm';
 import { ExamResultForm } from './forms/ExamResultForm';
 import { UniversityAdmissionForm } from './forms/UniversityAdmissionForm';
 import { InstituteLogoSelector } from './InstituteLogoSelector';
+import { uploadToCloudinary, deleteFromCloudinary } from '../../lib/cloudinary';
 
 interface JobFormProps {
   editingJob: Job | null;
@@ -47,30 +48,21 @@ export const JobForm: React.FC<JobFormProps> = ({
     }));
   };
 
-  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+
+  const handleImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     const fileList: File[] = Array.from(files);
-    const validFiles = fileList.filter((f: File) => {
-      if (f.size > 5 * 1024 * 1024) {
-        alert(`"${f.name}" ফাইলের সাইজ সর্বাধিক ৫ MB হওয়া আবশ্যক!`);
-        return false;
-      }
-      return true;
-    });
+    setIsUploadingImages(true);
 
-    if (validFiles.length === 0) return;
+    try {
+      const uploadPromises = fileList.map((file) =>
+        uploadToCloudinary(file, 'shafinbd_jobs')
+      );
+      const newUrls = await Promise.all(uploadPromises);
 
-    const readPromises = validFiles.map((file) => {
-      return new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(file);
-      });
-    });
-
-    Promise.all(readPromises).then((newBase64s) => {
       setJobForm((prev: any) => {
         const existingList =
           prev.imageUrls && Array.isArray(prev.imageUrls) && prev.imageUrls.length > 0
@@ -79,18 +71,22 @@ export const JobForm: React.FC<JobFormProps> = ({
             ? [prev.imageUrl]
             : [];
 
-        const updatedList = [...existingList, ...newBase64s];
+        const updatedList = [...existingList, ...newUrls];
         return {
           ...prev,
           imageUrls: updatedList,
           imageUrl: updatedList[0] || '',
         };
       });
-
+    } catch (err) {
+      console.error('Failed to upload image(s) to Cloudinary:', err);
+      alert('ক্লাউডিনারিতে ছবি আপলোড করতে সমস্যা হয়েছে! আবার চেষ্টা করুন।');
+    } finally {
+      setIsUploadingImages(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    });
+    }
   };
 
   const handleRemoveImage = (indexToRemove: number) => {
@@ -102,6 +98,12 @@ export const JobForm: React.FC<JobFormProps> = ({
           ? [prev.imageUrl]
           : [];
 
+      const targetUrl = existingList[indexToRemove];
+      if (targetUrl) {
+        // Automatically delete from Cloudinary
+        deleteFromCloudinary(targetUrl);
+      }
+
       const updatedList = existingList.filter((_: any, i: number) => i !== indexToRemove);
       return {
         ...prev,
@@ -112,6 +114,18 @@ export const JobForm: React.FC<JobFormProps> = ({
   };
 
   const handleClearAllImages = () => {
+    const existingList =
+      jobForm.imageUrls && Array.isArray(jobForm.imageUrls) && jobForm.imageUrls.length > 0
+        ? jobForm.imageUrls
+        : jobForm.imageUrl
+        ? [jobForm.imageUrl]
+        : [];
+
+    // Automatically delete all images from Cloudinary
+    existingList.forEach((url: string) => {
+      deleteFromCloudinary(url);
+    });
+
     setJobForm((prev: any) => ({
       ...prev,
       imageUrls: [],
@@ -238,7 +252,7 @@ export const JobForm: React.FC<JobFormProps> = ({
               <span>সার্কুলার / ফলাফলের ছবি যুক্ত করুন (এক বা একাধিক ছবি)</span>
             </label>
             <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-              বহুপৃষ্ঠা সার্কুলার বা রেজাল্টের জন্য একাধিক ছবি একসঙ্গে বা একের পর এক আপলোড করতে পারবেন (Base64)
+              Cloudinary ওয়েবপি (WebP) ফরম্যাট এবং স্বয়ংক্রিয় প্রসেসিং (Max 700KB) যুক্ত বহুপৃষ্ঠা ছবি আপলোড
             </p>
           </div>
 
@@ -248,6 +262,7 @@ export const JobForm: React.FC<JobFormProps> = ({
               ref={fileInputRef}
               accept="image/*"
               multiple
+              disabled={isUploadingImages}
               onChange={handleImagesChange}
               className="hidden"
               id="circular-image-upload"
@@ -255,12 +270,23 @@ export const JobForm: React.FC<JobFormProps> = ({
 
             <label
               htmlFor="circular-image-upload"
-              className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer shadow-sm transition-all"
+              className={`px-4 py-2.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer shadow-sm transition-all ${
+                isUploadingImages ? 'opacity-70 pointer-events-none' : ''
+              }`}
             >
-              <Upload className="w-4 h-4 text-emerald-400" />
-              <span>
-                {currentImages.length > 0 ? 'আরও ছবি যুক্ত করুন (Upload More)' : 'ছবি আপলোড করুন (Upload Images)'}
-              </span>
+              {isUploadingImages ? (
+                <>
+                  <Loader2 className="w-4 h-4 text-emerald-400 animate-spin" />
+                  <span>ক্লাউডিনারিতে আপলোড হচ্ছে (WebP ≤700KB)...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 text-emerald-400" />
+                  <span>
+                    {currentImages.length > 0 ? 'আরও ছবি যুক্ত করুন (Upload More)' : 'ছবি আপলোড করুন (Cloudinary WebP)'}
+                  </span>
+                </>
+              )}
             </label>
 
             {currentImages.length > 0 && (

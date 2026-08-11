@@ -29,6 +29,7 @@ import { triggerPushBroadcast } from '../lib/pushNotification';
 import { ADMIN_EMAILS, INITIAL_CATEGORIES, INITIAL_SAMPLE_USERS, INITIAL_NOTIFICATIONS } from './jobConstants';
 import { processJobLifecycle } from './jobLifecycle';
 import { syncProfileToExtension } from '../lib/extensionSync';
+import { deleteFromCloudinary } from '../lib/cloudinary';
 
 // Re-export for components that import directly from JobContext
 export { ADMIN_EMAILS, processJobLifecycle };
@@ -475,6 +476,18 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteJob = (jobId: string) => {
+    const jobToDelete = jobs.find((j) => j.id === jobId);
+    if (jobToDelete) {
+      if (jobToDelete.companyLogo) {
+        deleteFromCloudinary(jobToDelete.companyLogo);
+      }
+      if (jobToDelete.imageUrl) {
+        deleteFromCloudinary(jobToDelete.imageUrl);
+      }
+      if (jobToDelete.imageUrls && Array.isArray(jobToDelete.imageUrls)) {
+        jobToDelete.imageUrls.forEach((url) => deleteFromCloudinary(url));
+      }
+    }
     setJobs((prev) => prev.filter((j) => j.id !== jobId));
     deleteJobFromFirestore(jobId);
   };

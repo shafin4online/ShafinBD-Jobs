@@ -4,7 +4,7 @@ import { getMessaging, getToken, isSupported } from "firebase/messaging";
 import { firebaseConfig, db } from "./firebase";
 
 export const VAPID_KEY = "BFWUlHzbzaC56w2UtAsxoxa_gI97nexu0bNfskqkAJj6-Fti898Ge8r4SpSmA3gFOKeVGXrj18PHkbofFnKHd-4";
-export const NOTIFICATION_ICON = "https://lh3.googleusercontent.com/d/16e44uH8RVDhPCQtepuf_92JTg91rK0Az";
+export const NOTIFICATION_ICON = "https://res.cloudinary.com/prmoymao/image/upload/v1786423884/pwa-192x192.webp";
 
 /**
  * Get Notification Permission Status safely
@@ -101,7 +101,26 @@ export const triggerPushBroadcast = async (payload: { title: string; body: strin
   const icon = NOTIFICATION_ICON;
   const url = payload.url || "/";
 
-  // 1. Show local notification on active device if permission granted
+  // 1. Send push notification via backend API (Firebase Admin FCM multicast to all user tokens)
+  try {
+    await fetch("/api/send-notification", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        title: payload.title,
+        body: payload.body,
+        url,
+        icon,
+        jobCategory: payload.jobCategory || "General"
+      })
+    });
+  } catch (err) {
+    console.warn("Could not call /api/send-notification endpoint:", err);
+  }
+
+  // 2. Show immediate local notification if browser is actively open
   if (getNotificationPermission() === "granted") {
     if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.ready.then((reg) => {
@@ -119,21 +138,6 @@ export const triggerPushBroadcast = async (payload: { title: string; body: strin
     } else if ("Notification" in window) {
       new Notification(`📢 ${payload.title}`, { body: payload.body, icon });
     }
-  }
-
-  // 2. Save broadcast payload to Firestore `push_broadcasts` collection
-  try {
-    const broadcastRef = doc(collection(db, "push_broadcasts"));
-    await setDoc(broadcastRef, {
-      title: payload.title,
-      body: payload.body,
-      url,
-      jobCategory: payload.jobCategory || "General",
-      createdAt: serverTimestamp(),
-      icon
-    });
-  } catch (err) {
-    console.warn("Could not record broadcast to Firestore:", err);
   }
 };
 
