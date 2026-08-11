@@ -463,7 +463,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       title: `নতুন নিয়োগ বিজ্ঞপ্তি: ${jobData.title}`,
       body: `${jobData.company} (${jobData.location}) | আবেদনের শেষ তারিখ: ${jobData.deadline}`,
       jobCategory: jobData.category,
-      url: '/'
+      url: `/#/job/${newJob.id}`
     });
 
     return newJob;
