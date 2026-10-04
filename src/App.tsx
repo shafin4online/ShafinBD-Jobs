@@ -19,6 +19,7 @@ import { parseToDate } from './context/jobLifecycle';
 import { LoginRequiredCard } from './components/LoginRequiredCard';
 import { MobileFilterModal } from './components/MobileFilterModal';
 import { SavedJobsList } from './components/profile/SavedJobsList';
+import { QuestionBankMain } from './modules/questionBank';
 
 const MainContent: React.FC = () => {
   const { 
@@ -62,6 +63,10 @@ const MainContent: React.FC = () => {
 
       if (newHash === '#/privacy' || newHash === '#/privacy-policy' || pathname === '/privacy' || pathname === '/privacy-policy') {
         setActiveTab('privacy-policy');
+      }
+
+      if (newHash === '#/question-bank' || newHash === '#/questions' || pathname === '/question-bank' || pathname === '/questions') {
+        setActiveTab('question-bank');
       }
 
       if (!newHash.startsWith('#/job/')) {
@@ -235,6 +240,16 @@ const MainContent: React.FC = () => {
 
           {/* TAB: EXAM RESULTS */}
           {activeTab === 'exam-results' && <ExamResultsPage />}
+
+          {/* TAB: QUESTION BANK */}
+          {activeTab === 'question-bank' && (
+            <div className="px-3 sm:px-0">
+              <QuestionBankMain
+                userId={authUser?.uid || null}
+                onOpenAuthModal={() => setShowAuthModal(true)}
+              />
+            </div>
+          )}
 
           {/* TAB: SAVED JOBS */}
           {activeTab === 'saved-jobs' && (

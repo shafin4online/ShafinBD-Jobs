@@ -3,6 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { createServer as createViteServer } from 'vite';
 import sendNotificationHandler from './api/send-notification.js';
+import quizSubmitHandler from './api/quiz-submit';
 
 const app = express();
 const PORT = 3000;
@@ -24,6 +25,11 @@ app.get('/api/health', (_req, res) => {
 // Push Notification API Route (Firebase Admin FCM)
 app.post('/api/send-notification', (req, res) => {
   sendNotificationHandler(req, res);
+});
+
+// Server-Authoritative Quiz Submit API Route
+app.post('/api/quiz/submit', (req, res) => {
+  quizSubmitHandler(req, res);
 });
 
 // Cloudinary Upload API Route

@@ -19,7 +19,8 @@ import {
   LogOut,
   X,
   User as UserIcon,
-  Award
+  Award,
+  BookOpen
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -57,6 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { id: 'private-jobs', key: 'privateJobs', icon: Briefcase },
     { id: 'university-admission', key: 'univAdmission', icon: GraduationCap, badge: 'New' },
     { id: 'exam-results', key: 'examResults', icon: Award, badge: 'Result' },
+    { id: 'question-bank', key: 'questionBank', icon: BookOpen, badge: 'BCS' },
     { id: 'saved-jobs', key: 'savedJobs', icon: Bookmark },
     { id: 'profile', key: 'candidateProfile', icon: UserCheck },
   ];

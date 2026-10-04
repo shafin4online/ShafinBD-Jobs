@@ -190,6 +190,7 @@ export type ActiveTab =
   | 'private-jobs'
   | 'university-admission'
   | 'exam-results'
+  | 'question-bank'
   | 'saved-jobs'
   | 'applications' 
   | 'profile' 
