@@ -11,7 +11,9 @@ import {
   ArrowRight,
   TrendingUp,
   UserCheck,
-  ShieldCheck
+  ShieldCheck,
+  HelpCircle,
+  Award
 } from 'lucide-react';
 
 export const AdminOverview: React.FC = () => {
@@ -113,7 +115,7 @@ export const AdminOverview: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <button
             onClick={() => setAdminSubTab('post')}
             className="p-3.5 bg-emerald-600 hover:bg-emerald-500 rounded-2xl text-left transition-all flex flex-col justify-between shadow-md cursor-pointer group"
@@ -124,7 +126,35 @@ export const AdminOverview: React.FC = () => {
             </div>
             <div className="mt-3">
               <p className="text-xs font-black text-white">নতুন জব পোস্ট</p>
-              <p className="text-[10px] text-emerald-100">সার্কুলার প্রকাশ করুন</p>
+              <p className="text-[10px] text-emerald-100">সার্কুলার প্রকাশ</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setAdminSubTab('question-bank')}
+            className="p-3.5 bg-indigo-600 hover:bg-indigo-500 rounded-2xl text-left transition-all flex flex-col justify-between shadow-md cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <HelpCircle className="w-5 h-5 text-white" />
+              <ArrowRight className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />
+            </div>
+            <div className="mt-3">
+              <p className="text-xs font-black text-white">প্রশ্নব্যাংক</p>
+              <p className="text-[10px] text-indigo-100">প্রশ্ন ও বাল্ক ইমপোর্ট</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setAdminSubTab('model-tests')}
+            className="p-3.5 bg-amber-600 hover:bg-amber-500 rounded-2xl text-left transition-all flex flex-col justify-between shadow-md cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <Award className="w-5 h-5 text-white" />
+              <ArrowRight className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />
+            </div>
+            <div className="mt-3">
+              <p className="text-xs font-black text-white">লাইভ মডেল টেস্ট</p>
+              <p className="text-[10px] text-amber-100">শিডিউল ও মেধা তালিকা</p>
             </div>
           </button>
 
@@ -151,8 +181,8 @@ export const AdminOverview: React.FC = () => {
               <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
             </div>
             <div className="mt-3">
-              <p className="text-xs font-black text-white">নোটিফিকেশন প্যানেল</p>
-              <p className="text-[10px] text-slate-400">মেসেজ/এলার্ট ব্রডকাস্ট</p>
+              <p className="text-xs font-black text-white">নোটিফিকেশন</p>
+              <p className="text-[10px] text-slate-400">এলার্ট ব্রডকাস্ট</p>
             </div>
           </button>
 
@@ -165,8 +195,8 @@ export const AdminOverview: React.FC = () => {
               <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
             </div>
             <div className="mt-3">
-              <p className="text-xs font-black text-white">ক্যাটাগরি ম্যানেজমেন্ট</p>
-              <p className="text-[10px] text-slate-400">{categoriesList.length} ক্যাটাগরি রয়েছে</p>
+              <p className="text-xs font-black text-white">ক্যাটাগরি</p>
+              <p className="text-[10px] text-slate-400">{categoriesList.length} ক্যাটাগরি</p>
             </div>
           </button>
         </div>

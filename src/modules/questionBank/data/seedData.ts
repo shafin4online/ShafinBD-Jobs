@@ -438,8 +438,8 @@ export const seedInitialQuestionBankIfEmpty = async (): Promise<boolean> => {
 
     await batch.commit();
     return true;
-  } catch (error) {
-    console.error('Error seeding initial question bank:', error);
+  } catch (error: any) {
+    console.warn('Initial question bank seed notice (using in-memory fallback):', error?.message || error);
     return false;
   }
 };

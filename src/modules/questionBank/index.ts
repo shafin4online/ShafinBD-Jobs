@@ -13,3 +13,4 @@ export * from './components/QuizConfigModal';
 export * from './components/QuizPlayerView';
 export * from './components/QuizResultView';
 export * from './components/QuizHistoryModal';
+export * from './components/StudentAnalyticsDashboard';

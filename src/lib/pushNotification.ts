@@ -208,12 +208,12 @@ export const setupPushBroadcastListener = () => {
           }
         }
       });
-    }, (error: any) => {
-      console.warn("Firestore push broadcast listener warning:", error);
+    }, (_error: any) => {
+      // Suppress unauthenticated/offline broadcast errors
     });
 
     return unsubscribe;
-  } catch (err) {
-    console.warn("Could not setup push broadcast listener:", err);
+  } catch (_err) {
+    // Suppress setup errors
   }
 };

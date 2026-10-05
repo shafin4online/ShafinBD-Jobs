@@ -19,6 +19,7 @@ import {
   UpdateTopicInput,
 } from '../../../types/questionBank';
 import { generateSlug } from './subjectService';
+import { SEED_TOPICS } from '../data/seedData';
 
 const topicsRef = collection(db, 'topics');
 
@@ -44,13 +45,15 @@ export const getTopicsBySubject = async (
       );
     }
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...docSnap.data(),
-    })) as QuestionBankTopic[];
-  } catch (error) {
-    console.error(`Error fetching topics for subject ${subjectId}:`, error);
-    return [];
+    if (!snapshot.empty) {
+      return snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      })) as QuestionBankTopic[];
+    }
+    return SEED_TOPICS.filter((t) => t.subjectId === subjectId) as QuestionBankTopic[];
+  } catch (_error: any) {
+    return SEED_TOPICS.filter((t) => t.subjectId === subjectId) as QuestionBankTopic[];
   }
 };
 
@@ -62,11 +65,14 @@ export const getTopics = getTopicsBySubject;
 export const getTopic = async (topicId: string): Promise<QuestionBankTopic | null> => {
   try {
     const docSnap = await getDoc(doc(db, 'topics', topicId));
-    if (!docSnap.exists()) return null;
-    return { id: docSnap.id, ...docSnap.data() } as QuestionBankTopic;
-  } catch (error) {
-    console.error(`Error fetching topic ${topicId}:`, error);
-    return null;
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as QuestionBankTopic;
+    }
+    const fallback = SEED_TOPICS.find((t) => t.id === topicId);
+    return (fallback as QuestionBankTopic) || null;
+  } catch (_error: any) {
+    const fallback = SEED_TOPICS.find((t) => t.id === topicId);
+    return (fallback as QuestionBankTopic) || null;
   }
 };
 

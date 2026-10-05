@@ -16,7 +16,9 @@ import {
   CloudUpload,
   ExternalLink,
   X,
-  AlertTriangle
+  AlertTriangle,
+  HelpCircle,
+  Award
 } from 'lucide-react';
 import { JobForm } from './admin/JobForm';
 import { AdminJobsTable } from './admin/AdminJobsTable';
@@ -25,6 +27,8 @@ import { AdminOverview } from './admin/AdminOverview';
 import { AdminUserList } from './admin/AdminUserList';
 import { AdminNotifications } from './admin/AdminNotifications';
 import { AdminCategories } from './admin/AdminCategories';
+import { AdminQuestionBankManagement } from './admin/questionBank/AdminQuestionBankManagement';
+import { AdminModelTestManagement } from './admin/questionBank/AdminModelTestManagement';
 import { AdminSubTab } from '../context/jobContextTypes';
 
 export const AdminPanel: React.FC = () => {
@@ -429,11 +433,13 @@ export const AdminPanel: React.FC = () => {
   const subNavTabs: Array<{ id: AdminSubTab; label: string; icon: any }> = [
     { id: 'overview', label: 'ওভারভিউ (Overview)', icon: LayoutDashboard },
     { id: 'post', label: 'নতুন জব পোস্ট (Post Job)', icon: PlusCircle },
+    { id: 'jobs', label: 'সার্কুলার তালিকা (' + jobs.length + ')', icon: Briefcase },
+    { id: 'question-bank', label: 'প্রশ্নব্যাংক', icon: HelpCircle },
+    { id: 'model-tests', label: 'লাইভ মডেল টেস্ট', icon: Award },
     { id: 'users', label: 'ইউজার লিস্ট (Users)', icon: Users },
+    { id: 'applications', label: 'আবেদনসমূহ (' + applications.length + ')', icon: FileText },
     { id: 'notifications', label: 'নোটিফিকেশন প্যানেল', icon: Bell },
     { id: 'categories', label: 'ক্যাটাগরি ম্যানেজমেন্ট', icon: FolderKanban },
-    { id: 'jobs', label: 'সার্কুলার তালিকা (' + jobs.length + ')', icon: Briefcase },
-    { id: 'applications', label: 'আবেদনসমূহ (' + applications.length + ')', icon: FileText },
   ];
 
   return (
@@ -525,6 +531,10 @@ export const AdminPanel: React.FC = () => {
           toggleJobFeatured={toggleJobFeatured}
         />
       )}
+
+      {adminSubTab === 'question-bank' && <AdminQuestionBankManagement />}
+
+      {adminSubTab === 'model-tests' && <AdminModelTestManagement />}
 
       {adminSubTab === 'applications' && (
         <AdminApplicationsTable

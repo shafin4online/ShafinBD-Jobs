@@ -50,6 +50,30 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // Phase 5: Scheduled Live Model Tests & Leaderboard
+    match /modelTests/{testId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      // Questions snapshot inside Model Test
+      match /questions/{questionId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+
+      // Leaderboard / Merit List
+      match /leaderboard/{userId} {
+        allow read: if true;
+        allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      }
+
+      // Submissions
+      match /submissions/{userId} {
+        allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+        allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      }
+    }
+
     // User Data & Subcollections
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
@@ -78,6 +102,23 @@ service cloud.firestore {
         match /questions/{questionId} {
           allow read, write: if isOwner(userId);
         }
+      }
+
+      // Performance Analytics Derived Aggregates (O(1) dashboard reads)
+      match /analytics/{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /analytics_subjects/{subjectId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /analytics_topics/{topicId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /analytics_daily/{date} {
+        allow read, write: if isOwner(userId);
       }
     }
 

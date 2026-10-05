@@ -13,7 +13,9 @@ import {
   LogOut, 
   X, 
   Home, 
-  ShieldCheck 
+  ShieldCheck,
+  HelpCircle,
+  Award
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -42,6 +44,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
     { id: 'overview', label: 'এডমিন ড্যাশবোর্ড (Overview)', icon: LayoutDashboard },
     { id: 'post', label: 'নতুন জব পোস্ট (Post Job)', icon: PlusCircle },
     { id: 'jobs', label: 'সার্কুলার তালিকা (Manage Jobs)', icon: Briefcase },
+    { id: 'question-bank', label: 'প্রশ্নব্যাংক (Question Bank)', icon: HelpCircle },
+    { id: 'model-tests', label: 'লাইভ মডেল টেস্ট (Live Exams)', icon: Award },
     { id: 'users', label: 'ইউজার তালিকা (User List)', icon: Users },
     { id: 'applications', label: 'আবেদনসমূহ (Applications)', icon: FileText },
     { id: 'notifications', label: 'নোটিফিকেশন পাঠান (Notifications)', icon: Bell },

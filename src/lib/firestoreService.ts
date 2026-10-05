@@ -25,12 +25,10 @@ export const subscribeToJobs = (onSync: (jobs: Job[]) => void, onError?: (err: a
         }
       }, 
       (error) => {
-        console.warn('Firestore jobs listener notice:', error);
         if (onError) onError(error);
       }
     );
   } catch (err) {
-    console.warn('Firestore subscription catch:', err);
     if (onError) onError(err);
     return () => {};
   }
@@ -53,12 +51,10 @@ export const subscribeToApplications = (onSync: (apps: JobApplication[]) => void
         }
       }, 
       (error) => {
-        console.warn('Firestore apps listener notice:', error);
         if (onError) onError(error);
       }
     );
   } catch (err) {
-    console.warn('Firestore apps catch:', err);
     if (onError) onError(err);
     return () => {};
   }
@@ -81,7 +77,6 @@ export const subscribeToProfile = (profileId: string, onSync: (profile: UserProf
         }
       }, 
       (error) => {
-        console.warn('Firestore profile listener notice:', error);
         if (onError) onError(error);
       }
     );

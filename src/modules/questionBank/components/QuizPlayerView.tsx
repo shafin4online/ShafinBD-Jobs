@@ -37,6 +37,7 @@ interface QuizPlayerViewProps {
   userId?: string | null;
   onExit: () => void;
   onOpenAuthModal?: () => void;
+  onViewAnalytics?: () => void;
 }
 
 export const QuizPlayerView: React.FC<QuizPlayerViewProps> = ({
@@ -46,6 +47,7 @@ export const QuizPlayerView: React.FC<QuizPlayerViewProps> = ({
   userId,
   onExit,
   onOpenAuthModal,
+  onViewAnalytics,
 }) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [userAnswers, setUserAnswers] = useState<
@@ -224,6 +226,7 @@ export const QuizPlayerView: React.FC<QuizPlayerViewProps> = ({
         onNewQuiz={onExit}
         onBackToMain={onExit}
         onOpenAuthModal={onOpenAuthModal}
+        onViewAnalytics={onViewAnalytics}
       />
     );
   }

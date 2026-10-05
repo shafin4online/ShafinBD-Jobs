@@ -2,7 +2,16 @@ import React from 'react';
 import { Job, UserProfile, JobApplication, FilterState, ActiveTab, ApplicationStatus } from '../types';
 import { User } from '../lib/firebase';
 
-export type AdminSubTab = 'overview' | 'post' | 'jobs' | 'users' | 'notifications' | 'categories' | 'applications';
+export type AdminSubTab = 
+  | 'overview' 
+  | 'post' 
+  | 'jobs' 
+  | 'question-bank' 
+  | 'model-tests' 
+  | 'users' 
+  | 'applications' 
+  | 'notifications' 
+  | 'categories';
 
 export interface AdminNotification {
   id: string;

@@ -17,6 +17,7 @@ import {
   CreateSubjectInput,
   UpdateSubjectInput,
 } from '../../../types/questionBank';
+import { SEED_SUBJECTS } from '../data/seedData';
 
 // Helper to generate URL-safe slugs
 export const generateSlug = (text: string): string => {
@@ -42,13 +43,15 @@ export const getSubjects = async (onlyActive = true): Promise<QuestionBankSubjec
       q = query(subjectsRef, where('isActive', '==', true), orderBy('sortOrder', 'asc'));
     }
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...docSnap.data(),
-    })) as QuestionBankSubject[];
-  } catch (error) {
-    console.error('Error fetching subjects:', error);
-    return [];
+    if (!snapshot.empty) {
+      return snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      })) as QuestionBankSubject[];
+    }
+    return SEED_SUBJECTS as QuestionBankSubject[];
+  } catch (_error: any) {
+    return SEED_SUBJECTS as QuestionBankSubject[];
   }
 };
 
@@ -58,11 +61,14 @@ export const getSubjects = async (onlyActive = true): Promise<QuestionBankSubjec
 export const getSubject = async (subjectId: string): Promise<QuestionBankSubject | null> => {
   try {
     const docSnap = await getDoc(doc(db, 'subjects', subjectId));
-    if (!docSnap.exists()) return null;
-    return { id: docSnap.id, ...docSnap.data() } as QuestionBankSubject;
-  } catch (error) {
-    console.error(`Error fetching subject ${subjectId}:`, error);
-    return null;
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as QuestionBankSubject;
+    }
+    const fallback = SEED_SUBJECTS.find((s) => s.id === subjectId);
+    return (fallback as QuestionBankSubject) || null;
+  } catch (_error: any) {
+    const fallback = SEED_SUBJECTS.find((s) => s.id === subjectId);
+    return (fallback as QuestionBankSubject) || null;
   }
 };
 

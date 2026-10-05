@@ -343,3 +343,79 @@ export interface UpdateQuestionInput {
   tags?: string[];
   isActive?: boolean;
 }
+
+// ==========================================
+// Phase 4.3: Student Performance Analytics
+// Constant O(1) Read Aggregates & Smart Insights
+// ==========================================
+
+export interface UserAnalyticsOverview {
+  userId: string;
+  totalQuizzes: number;
+  totalQuestionsAttempted: number;
+  totalCorrect: number;
+  totalWrong: number;
+  totalSkipped: number;
+  totalScore: number;
+  totalDurationSeconds: number;
+  overallAccuracy: number; // Percentage (0-100)
+  averageScore: number;
+  lastQuizAt?: Timestamp;
+  lastScore?: number;
+  lastPercentage?: number;
+  updatedAt?: Timestamp;
+}
+
+export interface UserSubjectAnalytics {
+  subjectId: string;
+  subjectName: string;
+  quizzesCount: number;
+  totalAttempted: number;
+  totalCorrect: number;
+  totalWrong: number;
+  accuracy: number; // Percentage (0-100)
+  lastAttemptAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+export interface UserTopicAnalytics {
+  topicId: string;
+  topicName: string;
+  subjectId: string;
+  subjectName?: string;
+  totalAttempted: number;
+  totalCorrect: number;
+  totalWrong: number;
+  accuracy: number; // Percentage (0-100)
+  classification: 'strong' | 'moderate' | 'weak'; // strong >= 75%, moderate 50-74%, weak < 50%
+  lastAttemptAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+export interface UserDailyAnalytics {
+  date: string; // YYYY-MM-DD
+  quizzesCount: number;
+  questionsAttempted: number;
+  correctCount: number;
+  wrongCount: number;
+  totalScore: number;
+  timeSpentSeconds: number;
+  accuracy: number; // Percentage (0-100)
+  updatedAt?: Timestamp;
+}
+
+export interface SmartInsightRecommendation {
+  id: string;
+  type: 'weak-topic' | 'daily-revision' | 'strong-topic' | 'time-management';
+  title: string;
+  description: string;
+  actionText: string;
+  subjectId?: string;
+  subjectName?: string;
+  topicId?: string;
+  topicName?: string;
+  accuracy?: number;
+  attemptCount?: number;
+  priority: 'high' | 'medium' | 'low';
+}
+

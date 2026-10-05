@@ -301,6 +301,127 @@ export default async function quizSubmitHandler(req: any, res: any) {
       }
     }
 
+    // 6d. Phase 4.3 Analytics Aggregates (O(1) dashboard reads)
+    // 6d-1. Overall Analytics Overview
+    const analyticsOverviewDoc = userCol.collection('analytics').doc('overview');
+    batch.set(
+      analyticsOverviewDoc,
+      {
+        userId,
+        totalQuizzes: FieldValue.increment(1),
+        totalQuestionsAttempted: FieldValue.increment(answeredCount),
+        totalCorrect: FieldValue.increment(correctCount),
+        totalWrong: FieldValue.increment(wrongCount),
+        totalSkipped: FieldValue.increment(skippedCount),
+        totalScore: FieldValue.increment(score),
+        totalDurationSeconds: FieldValue.increment(actualTimeTakenSeconds),
+        lastQuizAt: completedAtTimestamp,
+        lastScore: score,
+        lastPercentage: percentage,
+        updatedAt: completedAtTimestamp,
+      },
+      { merge: true }
+    );
+
+    // 6d-2. Subject Level Analytics Breakdown
+    const subjectAttemptMap: Record<string, { subjectId: string; subjectName: string; attempted: number; correct: number; wrong: number }> = {};
+    const topicAttemptMap: Record<string, { topicId: string; topicName: string; subjectId: string; subjectName: string; attempted: number; correct: number; wrong: number }> = {};
+
+    for (const q of evaluatedSnapshots) {
+      const ans = evaluatedAnswers[q.id];
+      if (ans && ans.selectedAnswer) {
+        if (q.subjectId) {
+          if (!subjectAttemptMap[q.subjectId]) {
+            subjectAttemptMap[q.subjectId] = {
+              subjectId: q.subjectId,
+              subjectName: q.subjectName || '',
+              attempted: 0,
+              correct: 0,
+              wrong: 0,
+            };
+          }
+          subjectAttemptMap[q.subjectId].attempted += 1;
+          if (ans.isCorrect) subjectAttemptMap[q.subjectId].correct += 1;
+          else subjectAttemptMap[q.subjectId].wrong += 1;
+        }
+
+        if (q.topicId) {
+          if (!topicAttemptMap[q.topicId]) {
+            topicAttemptMap[q.topicId] = {
+              topicId: q.topicId,
+              topicName: q.topicName || '',
+              subjectId: q.subjectId || '',
+              subjectName: q.subjectName || '',
+              attempted: 0,
+              correct: 0,
+              wrong: 0,
+            };
+          }
+          topicAttemptMap[q.topicId].attempted += 1;
+          if (ans.isCorrect) topicAttemptMap[q.topicId].correct += 1;
+          else topicAttemptMap[q.topicId].wrong += 1;
+        }
+      }
+    }
+
+    const subAnalyticsCol = userCol.collection('analytics_subjects');
+    for (const [sId, sData] of Object.entries(subjectAttemptMap)) {
+      const subDoc = subAnalyticsCol.doc(sId);
+      batch.set(
+        subDoc,
+        {
+          subjectId: sId,
+          subjectName: sData.subjectName,
+          quizzesCount: FieldValue.increment(attemptData.subjectId === sId ? 1 : 0),
+          totalAttempted: FieldValue.increment(sData.attempted),
+          totalCorrect: FieldValue.increment(sData.correct),
+          totalWrong: FieldValue.increment(sData.wrong),
+          lastAttemptAt: completedAtTimestamp,
+          updatedAt: completedAtTimestamp,
+        },
+        { merge: true }
+      );
+    }
+
+    // 6d-3. Topic Level Analytics Breakdown (For Weak/Strong classification)
+    const topicAnalyticsCol = userCol.collection('analytics_topics');
+    for (const [tId, tData] of Object.entries(topicAttemptMap)) {
+      const topicDoc = topicAnalyticsCol.doc(tId);
+      batch.set(
+        topicDoc,
+        {
+          topicId: tId,
+          topicName: tData.topicName,
+          subjectId: tData.subjectId,
+          subjectName: tData.subjectName,
+          totalAttempted: FieldValue.increment(tData.attempted),
+          totalCorrect: FieldValue.increment(tData.correct),
+          totalWrong: FieldValue.increment(tData.wrong),
+          lastAttemptAt: completedAtTimestamp,
+          updatedAt: completedAtTimestamp,
+        },
+        { merge: true }
+      );
+    }
+
+    // 6d-4. Daily Performance Bucket (For trend analysis)
+    const todayStr = new Date().toISOString().split('T')[0];
+    const dailyAnalyticsDoc = userCol.collection('analytics_daily').doc(todayStr);
+    batch.set(
+      dailyAnalyticsDoc,
+      {
+        date: todayStr,
+        quizzesCount: FieldValue.increment(1),
+        questionsAttempted: FieldValue.increment(answeredCount),
+        correctCount: FieldValue.increment(correctCount),
+        wrongCount: FieldValue.increment(wrongCount),
+        totalScore: FieldValue.increment(score),
+        timeSpentSeconds: FieldValue.increment(actualTimeTakenSeconds),
+        updatedAt: completedAtTimestamp,
+      },
+      { merge: true }
+    );
+
     await batch.commit();
 
     // Fetch updated attempt document to return clean representation

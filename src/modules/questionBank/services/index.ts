@@ -11,3 +11,4 @@ export * from './progressService';
 export * from './favoriteService';
 export * from './quizService';
 export * from './importService';
+export * from './analyticsService';

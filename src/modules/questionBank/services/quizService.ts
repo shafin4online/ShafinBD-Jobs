@@ -431,6 +431,121 @@ export const submitQuizAttemptWithAnswers = async (params: {
     }
   }
 
+  // Phase 4.3 Analytics Aggregates (O(1) dashboard reads)
+  const analyticsOverviewDoc = doc(db, 'users', userId, 'analytics', 'overview');
+  batch.set(
+    analyticsOverviewDoc,
+    {
+      userId,
+      totalQuizzes: increment(1),
+      totalQuestionsAttempted: increment(answeredCount),
+      totalCorrect: increment(correctCount),
+      totalWrong: increment(wrongCount),
+      totalSkipped: increment(skippedCount),
+      totalScore: increment(score),
+      totalDurationSeconds: increment(timeTakenSeconds),
+      lastQuizAt: now,
+      lastScore: score,
+      lastPercentage: percentage,
+      updatedAt: now,
+    },
+    { merge: true }
+  );
+
+  const subjectAttemptMap: Record<string, { subjectId: string; subjectName: string; attempted: number; correct: number; wrong: number }> = {};
+  const topicAttemptMap: Record<string, { topicId: string; topicName: string; subjectId: string; subjectName: string; attempted: number; correct: number; wrong: number }> = {};
+
+  for (const q of questionSnapshots) {
+    const ans = finalAnswers[q.id];
+    if (ans && ans.selectedAnswer) {
+      if (q.subjectId) {
+        if (!subjectAttemptMap[q.subjectId]) {
+          subjectAttemptMap[q.subjectId] = {
+            subjectId: q.subjectId,
+            subjectName: q.subjectName || '',
+            attempted: 0,
+            correct: 0,
+            wrong: 0,
+          };
+        }
+        subjectAttemptMap[q.subjectId].attempted += 1;
+        if (ans.isCorrect) subjectAttemptMap[q.subjectId].correct += 1;
+        else subjectAttemptMap[q.subjectId].wrong += 1;
+      }
+
+      if (q.topicId) {
+        if (!topicAttemptMap[q.topicId]) {
+          topicAttemptMap[q.topicId] = {
+            topicId: q.topicId,
+            topicName: q.topicName || '',
+            subjectId: q.subjectId || '',
+            subjectName: q.subjectName || '',
+            attempted: 0,
+            correct: 0,
+            wrong: 0,
+          };
+        }
+        topicAttemptMap[q.topicId].attempted += 1;
+        if (ans.isCorrect) topicAttemptMap[q.topicId].correct += 1;
+        else topicAttemptMap[q.topicId].wrong += 1;
+      }
+    }
+  }
+
+  for (const [sId, sData] of Object.entries(subjectAttemptMap)) {
+    const sDoc = doc(db, 'users', userId, 'analytics_subjects', sId);
+    batch.set(
+      sDoc,
+      {
+        subjectId: sId,
+        subjectName: sData.subjectName,
+        quizzesCount: increment(existingAttempt.subjectId === sId ? 1 : 0),
+        totalAttempted: increment(sData.attempted),
+        totalCorrect: increment(sData.correct),
+        totalWrong: increment(sData.wrong),
+        lastAttemptAt: now,
+        updatedAt: now,
+      },
+      { merge: true }
+    );
+  }
+
+  for (const [tId, tData] of Object.entries(topicAttemptMap)) {
+    const tDoc = doc(db, 'users', userId, 'analytics_topics', tId);
+    batch.set(
+      tDoc,
+      {
+        topicId: tId,
+        topicName: tData.topicName,
+        subjectId: tData.subjectId,
+        subjectName: tData.subjectName,
+        totalAttempted: increment(tData.attempted),
+        totalCorrect: increment(tData.correct),
+        totalWrong: increment(tData.wrong),
+        lastAttemptAt: now,
+        updatedAt: now,
+      },
+      { merge: true }
+    );
+  }
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const dailyDoc = doc(db, 'users', userId, 'analytics_daily', todayStr);
+  batch.set(
+    dailyDoc,
+    {
+      date: todayStr,
+      quizzesCount: increment(1),
+      questionsAttempted: increment(answeredCount),
+      correctCount: increment(correctCount),
+      wrongCount: increment(wrongCount),
+      totalScore: increment(score),
+      timeSpentSeconds: increment(timeTakenSeconds),
+      updatedAt: now,
+    },
+    { merge: true }
+  );
+
   await batch.commit();
 
   const updatedSnap = await getDoc(attemptDoc);

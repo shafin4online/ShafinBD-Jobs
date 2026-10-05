@@ -18,6 +18,7 @@ import {
   Copy,
   Zap,
   Check,
+  BarChart3,
 } from 'lucide-react';
 import {
   QuizAttempt,
@@ -34,6 +35,7 @@ interface QuizResultViewProps {
   onNewQuiz: () => void;
   onBackToMain: () => void;
   onOpenAuthModal?: () => void;
+  onViewAnalytics?: () => void;
 }
 
 export const QuizResultView: React.FC<QuizResultViewProps> = ({
@@ -44,6 +46,7 @@ export const QuizResultView: React.FC<QuizResultViewProps> = ({
   onNewQuiz,
   onBackToMain,
   onOpenAuthModal,
+  onViewAnalytics,
 }) => {
   const [filterMode, setFilterMode] = useState<'all' | 'correct' | 'wrong' | 'skipped'>('all');
   const [expandedExplanations, setExpandedExplanations] = useState<Record<string, boolean>>({});
@@ -178,6 +181,16 @@ export const QuizResultView: React.FC<QuizResultViewProps> = ({
               </>
             )}
           </button>
+          {onViewAnalytics && (
+            <button
+              onClick={onViewAnalytics}
+              className="px-3.5 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 rounded-xl border border-amber-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="পারফরম্যান্স অ্যানালিটিক্স ও দুর্বল টপিক দেখুন"
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-amber-600" />
+              <span>অ্যানালিটিক্স</span>
+            </button>
+          )}
           <button
             onClick={onRetake}
             className="px-3.5 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-xl border border-emerald-200 flex items-center gap-1.5 transition-colors"
@@ -281,6 +294,32 @@ export const QuizResultView: React.FC<QuizResultViewProps> = ({
             {speedBadge}
           </div>
         </div>
+
+        {/* Actionable Analytics Callout */}
+        {onViewAnalytics && (
+          <div className="p-4 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border-t border-emerald-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-emerald-600 text-white rounded-xl shrink-0">
+                <BarChart3 className="w-4 h-4" />
+              </div>
+              <div>
+                <strong className="text-slate-900 block text-xs sm:text-sm font-bold">
+                  আপনার দুর্বল ও শক্তিশালী টপিক বিশ্লেষণ দেখুন
+                </strong>
+                <span className="text-slate-600 text-[11px]">
+                  কোন কোন বিষয়ে আরও অনুশীলন দরকার তা জানতে পারফরম্যান্স অ্যানালিটিক্স দেখুন
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={onViewAnalytics}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer shrink-0"
+            >
+              <span>অ্যানালিটিক্স ড্যাশবোর্ড</span>
+              <BarChart3 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Review Section */}
